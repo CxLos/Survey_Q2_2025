@@ -21,6 +21,8 @@ from oauth2client.service_account import ServiceAccountCredentials
 pd.set_option('display.max_rows', None)  # Show all rows
 pd.set_option('display.max_columns', None)  # Show all columns (if needed)
 pd.set_option('display.width', 1000)  # Adjust the width to prevent line wrapping
+
+pd.reset_option('display.max_columns')
 # -------------------------------------- DATA ------------------------------------------- #
 
 current_dir = os.getcwd()
@@ -49,13 +51,37 @@ else:
         creds = ServiceAccountCredentials.from_json_keyfile_name(creds_path, scope)
     else:
         raise FileNotFoundError("Service account JSON file not found and GOOGLE_CREDENTIALS is not set.")
+    
+expected_headers = [
+    'Timestamp',
+    'Email Address', 
+    'Name:', 
+    "Prior to today's visit, when was the last time you visited a doctor?", 
+    'Which services were provided to you today?', 
+    'How do you feel about the health issue that brought you to BMHC?', 
+    'What is your overall stress level?', 
+    'How would you rate your overall level of mental health?', 
+    'How would you rate your overall physical health?',
+    "What is your overall impression of the Black Men's Health Clinic?", 
+    'Did the medical provider meet your expectations?', 
+    'Did the medical care meet your needs?', 
+    'Did the Outreach & Engagement Team provide a strong support system?', 
+    'Are you a member of the HealthyCuts™ Program?',
+]
 
 # Authorize and load the sheet
 client = gspread.authorize(creds)
 sheet = client.open_by_url(sheet_url)
-worksheet = sheet.get_worksheet(0)  # ✅ This grabs the first worksheet
-data = pd.DataFrame(worksheet.get_all_records())
+worksheet = sheet.get_worksheet(0)  
+values = worksheet.get_all_values()
+headers = values[0] 
+rows = values[1:] # Remaining rows as data
+
+# data = pd.DataFrame(rows, columns=headers)
+# data = pd.DataFrame(worksheet.get_all_records())
 # data = pd.DataFrame(client.open_by_url(sheet_url).get_all_records())
+data = pd.DataFrame(worksheet.get_all_records(expected_headers=expected_headers))
+
 df = data.copy()
 
 # Get the reporting month:
@@ -63,9 +89,6 @@ current_month = datetime(2025, 3, 1).strftime("%B")
 
 # Trim leading and trailing whitespaces from column names
 df.columns = df.columns.str.strip()
-
-# Define a discrete color sequence
-# color_sequence = px.colors.qualitative.Plotly
 
 # Filtered df where 'Date of Activity:' is between Ocotber to December:
 df['Timestamp'] = pd.to_datetime(df['Timestamp'], errors='coerce')
@@ -76,9 +99,9 @@ df_1 = df[df['Month'] == 'January']
 df_2 = df[df['Month'] == 'February']
 df_3 = df[df['Month'] == 'March']
 
-# print(df.head(10))
+print(df.head(10))
 # print('Total Marketing Events: ', len(df))
-print('Column Names: \n', df.columns)
+# print('Column Names: \n', df.columns)
 # print('DF Shape:', df.shape)
 # print('Dtypes: \n', df.dtypes)
 # print('Info:', df.info())
@@ -90,7 +113,24 @@ print('Column Names: \n', df.columns)
 
 # ================================= Columns ================================= #
 
-# Column Names: 
+columns =[
+    'Timestamp',
+    'Email Address', 
+    'Name:', 
+    "Prior to today's visit, when was the last time you visited a doctor?", 
+    'Which services were provided to you today?', 
+    'How do you feel about the health issue that brought you to BMHC?', 
+    'What is your overall stress level?', 
+    'Explain the reason for your answer:', 
+    'How would you rate your overall level of mental health?', 
+    'How would you rate your overall physical health?', 'Please explain the reason for your answer:', 
+    "What is your overall impression of the Black Men's Health Clinic?", 
+    'Did the medical provider meet your expectations?', 
+    'Did the medical care meet your needs?', 
+    'Did the Outreach & Engagement Team provide a strong support system?', 'Please explain the reason for your answer:',
+    'Are you a member of the HealthyCuts™ Program?',
+    'Month'
+]
 
 
 
@@ -109,21 +149,26 @@ print('Column Names: \n', df.columns)
 
 df.rename(
     columns={
-        "": "",
-        "": "",
-        "": "",
-        "": "",
-        "": "",
-        "": "",
-        "": "",
-        "": "",
-        "": "",
-        "": "",
-        "": "",
-        "": "",
-
-    }, 
-inplace=True)
+        'Timestamp': 'Timestamp',
+        'Email Address': 'Email',
+        'Name:': 'Name',
+        "Prior to today's visit, when was the last time you visited a doctor?": 'Last Doctor Visit',
+        'Which services were provided to you today?': 'Services Provided',
+        'How do you feel about the health issue that brought you to BMHC?': 'Health Issue Sentiment',
+        'What is your overall stress level?': 'Stress',
+        'Explain the reason for your answer:': 'Stress Explanation',
+        'How would you rate your overall level of mental health?': 'Mental Health',
+        'How would you rate your overall physical health?': 'Physical Health',
+        'Please explain the reason for your answer:': 'Health Explanation',
+        "What is your overall impression of the Black Men's Health Clinic?": 'Impression',
+        'Did the medical provider meet your expectations?': 'Provider Expectations',
+        'Did the medical care meet your needs?': 'Care Needs',
+        'Did the Outreach & Engagement Team provide a strong support system?': 'Outreach Support',
+        'Please explain the reason for your answer:': 'Outreach Explanation',
+        'Are you a member of the HealthyCuts™ Program?': 'HealthyCuts Membership',
+    },
+    inplace=True
+)
 
 # Get the reporting quarter:
 def get_custom_quarter(date_obj):
@@ -177,1213 +222,32 @@ months_in_quarter = quarter_months[quarter]
 
 # ------------------------ Total Reviews ---------------------------- #
 
-total_engagements = len(df)
+total_reviews = len(df)
 # print('Total Engagements:', total_engagements)
 
 # ------------------------ Engagement Hours DF ---------------------------- #
 
-# print("Activity Duration Unique Before: \n", df['Activity Duration (minutes):'].unique().tolist())
-# print(df['Activity Duration (minutes):'])
 
-activity_unique = [
-    120, 
-]
-
-df['Minutes'] = (
-    df['Minutes']
-    .astype(str)
-    .str.strip()               
-    .replace({
-        "6 hrs": 360,
-        "5 hrs": 300,
-        "nan": 0,
-        "2400 minutes": 2400,
-        "1680 minutes( 28 hours) over 2 week period": 1680,
-        "450 mins": 450,
-        "75 minutes": 75,
-        "Onboarding Activities (Jordan Calbert)": 0,
-    })
-)
-
-df['Minutes'] = pd.to_numeric(df['Minutes'], errors='coerce')
-df['Minutes'] = df['Minutes'].fillna(0)
-
-# print("Activity Duration Unique After: \n", df['Activity Duration (minutes):'].unique().tolist())
-
-# Calculate total hours for each month in the current quarter
-hours = []
-for month in months_in_quarter:
-    hours_in_month = df[df['Month'] == month]['Minutes'].sum()/60
-    hours_in_month = round(hours_in_month)
-    hours.append(hours_in_month)
-    # print(f'Engagement hours in {month}:', hours_in_month, 'hours')
-    
-eng_hours = df.groupby('Minutes').size().reset_index(name='Count')
-eng_hours = df['Minutes'].sum()/60
-eng_hours = round(eng_hours)
-
-df_hours = pd.DataFrame({
-    'Month': months_in_quarter,
-    'Hours': hours
-})
-
-# Engagment Hours Bar Chart:
-hours_fig = px.bar(
-    df_hours,
-    x='Month',
-    y='Hours',
-    color = 'Month',
-    text='Hours',
-    labels={
-        'Hours': 'Hours',
-        'Month': 'Month'
-    }
-).update_layout(
-    title_x=0.5,
-    xaxis_title='Month',
-    yaxis_title='Engagement Hours',
-    height=600,  # Adjust graph height
-    title=dict(
-        text= f'{current_quarter} Engagement Hours by Month',
-        x=0.5, 
-        font=dict(
-            size=35,
-            family='Calibri',
-            color='black',
-            )
-    ),
-    font=dict(
-        family='Calibri',
-        size=17,
-        color='black'
-    ),
-    xaxis=dict(
-        title=dict(
-            text=None,
-            # text="Month",
-            font=dict(size=20),  # Font size for the title
-        ),
-        tickmode='array',
-        tickvals=df_hours['Month'].unique(),
-        tickangle=0  # Rotate x-axis labels for better readability
-    ),
-).update_traces(
-    texttemplate='%{text}',  # Display the count value above bars
-    textfont=dict(size=20),  # Increase text size in each bar
-    textposition='auto',  # Automatically position text above bars
-    textangle=0, # Ensure text labels are horizontal
-    hovertemplate=(  # Custom hover template
-        '<b>Name</b>: %{label}<br><b>Count</b>: %{y}<extra></extra>'  
-    ),
-)
-
-hours_pie = px.pie(
-    df_hours,
-    names='Month',
-    values='Hours',
-    color='Month',
-    height=550
-).update_layout(
-    title=dict(
-        x=0.5,
-        text=f'{current_quarter} Ratio Engagement Hours by Month',  # Title text
-        font=dict(
-            size=35,  # Increase this value to make the title bigger
-            family='Calibri',  # Optional: specify font family
-            color='black'  # Optional: specify font color
-        ),
-    ),  # Center-align the title
-    margin=dict(
-        l=0,  # Left margin
-        r=0,  # Right margin
-        t=100,  # Top margin
-        b=0   # Bottom margin
-    )  # Add margins around the chart
-).update_traces(
-    rotation=180,  # Rotate pie chart 90 degrees counterclockwise
-    textfont=dict(size=19),  # Increase text size in each bar
-    textinfo='value+percent',
-    # texttemplate='<br>%{percent:.0%}',  # Format percentage as whole numbers
-    hovertemplate='<b>%{label}</b>: %{value}<extra></extra>'
-)
 
 # ------------------------ Total Travel Time DF ---------------------------- #
 
-# print("Travel Time Unique Before: \n", df['Travel Time'].unique().tolist())
 
-travel_unique =  [
-    0, 
-    45,
-    60,
-    30,
-    300,
-    15,
-    90,
-    'End of Week 1 to 1 Performance Review',
-    240,
-    'nan',
-    'Sustainable Food Center + APH Health Education Strategy Meeting & Planning Activities',
-    480,
-    120,
-    'Community First Village Huddle',
- ]
-
-# Clean travel time values
-df['Travel Time'] = (
-    df['Travel Time']
-    .astype(str)
-    .str.strip()
-    .replace({
-        "End of Week 1 to 1 Performance Review": 0,
-        "Sustainable Food Center + APH Health Education Strategy Meeting & Planning Activities": 0,
-        "Community First Village Huddle": 0,
-        "nan": 0,
-    })
-)
-
-df['Travel Time'] = pd.to_numeric(df['Travel Time'], errors='coerce')
-df['Travel Time'] = df['Travel Time'].fillna(0)
-
-# print("Travel Time Unique After: \n", df['Total travel time (minutes):'].unique().tolist())
-# print(['Travel Time Value Counts: \n', df['Travel Time'].value_counts()])
-
-total_travel_time = df['Travel Time'].sum()
-total_travel_time = round(total_travel_time)
-# print("Total travel time:",total_travel_time)
-
-# Calculate total travel time per month
-travel_hours = []
-for month in months_in_quarter:
-    hours_in_month = df[df['Month'] == month]['Travel Time'].sum() / 60
-    hours_in_month = round(hours_in_month)
-    travel_hours.append(hours_in_month)
-
-df_travel = pd.DataFrame({
-    'Month': months_in_quarter,
-    'Travel Time': travel_hours
-})
-
-# Bar chart
-travel_fig = px.bar(
-    df_travel,
-    x='Month',
-    y='Travel Time',
-    color='Month',
-    text='Travel Time',
-    labels={
-        'Travel Time': 'Travel Time (hours)',
-        'Month': 'Month'
-    }
-).update_layout(
-    title_x=0.5,
-    xaxis_title='Month',
-    yaxis_title='Travel Time (hours)',
-    height=600,
-    title=dict(
-        text=f'{current_quarter} Travel Time by Month',
-        x=0.5, 
-        font=dict(
-            size=35,
-            family='Calibri',
-            color='black',
-            )
-    ),
-    font=dict(
-        family='Calibri',
-        size=17,
-        color='black'
-    ),
-    xaxis=dict(
-        title=dict(
-            text=None,
-            font=dict(size=20),
-        ),
-        tickmode='array',
-        tickvals=df_travel['Month'].unique(),
-        tickangle=0
-    ),
-).update_traces(
-    texttemplate='%{text}',
-    textfont=dict(size=20),
-    textposition='auto',
-    textangle=0,
-    hovertemplate='<b>Month</b>: %{label}<br><b>Travel Time</b>: %{y} hours<extra></extra>',
-)
-
-# Pie chart
-travel_pie = px.pie(
-    df_travel,
-    names='Month',
-    values='Travel Time',
-    color='Month',
-    height=550
-).update_layout(
-    title=dict(
-        x=0.5,
-        text=f'{current_quarter} Travel Time Ratio by Month',
-        font=dict(
-            size=35,
-            family='Calibri',
-            color='black'
-        ),
-    ),
-    margin=dict(l=0, r=0, t=100, b=0)
-).update_traces(
-    rotation=180,
-    textfont=dict(size=19),
-    textinfo='value+percent',
-    hovertemplate='<b>%{label}</b>: %{value} hours<extra></extra>'
-)
 
 # --------------------------------- Activity Status DF -------------------------------- #
 
-# Group by 'Activity Status:' dataframe
-activity_status_group = df.groupby('Activity Status:').size().reset_index(name='Count')
 
-status_fig = px.pie(
-    activity_status_group,
-    names='Activity Status:',
-    values='Count',
-).update_layout(
-    title= f'{current_quarter} Activity Status',
-    title_x=0.5,
-    height=550,
-    font=dict(
-        family='Calibri',
-        size=17,
-        color='black'
-    )
-).update_traces(
-    textposition='auto',
-    # textinfo='label+percent',
-    texttemplate='%{value}<br>%{percent:.0%}',  # Format percentage as whole numbers
-    hovertemplate='<b>Status</b>: %{label}<br><b>Count</b>: %{value}<extra></extra>'
-)
 
 # --------------------- Administrative Activity DF ------------------------ # 
 
-admin_value_counts = df['Admin Activity'].value_counts()
 
-# Convert the Series to a DataFrame
-admin_value_counts_df = admin_value_counts.reset_index()
-admin_value_counts_df.columns = ['Admin Activity', 'Count']  # Rename columns
-
-# Save the DataFrame to an Excel file
-output_path = os.path.join(script_dir, 'admin_activity_counts.xlsx')
-
-# admin_value_counts_df.to_excel(output_path, index=False)
-# print(f"Admin activity counts saved to {output_path}")
-
-# print("Administrative Activity Unique Before:", admin_value_counts)
-# print("Admin Activity value counts:", df['Admin Activity'].value_counts())
-
-admin_unique = [
-    '', 'Communication & Correspondence', '(4) Outreach 1 to 1 Strategy Meetings', 'Outreach Team Meeting', "St. David's + Kazi 88.7FM Strategic Partnership Meeting & Strategy Planning Discussion/Activities", 'Travis County Judge Andy Brown & Travis County Commissioner Ann Howard BMHC Tour & Discussion', 'Key Leaders Huddle', '2025 Calendar Year Outreach Preparation & Strategic Planning Activities', 'BMHC Quarterly Team Meeting', 'Events Planning Meeting', 'Gudlife 2025 Strategic Planning Session', 'Community First Village Huddle', 'Community First Village Onsite Outreach', 'Record Keeping & Documentation', "Men's Mental Health 1st Saturdays", 'Financial & Budgetary Management', 'Office Management', 'Meeting With Frost Bank', 'HR Support', 'Compliance & Policy Enforcement', 'BMHC Team', 'Special Events Team Meeting', 'Weekly team meeting', 'National Kidney Foundation Strategy Meeting (Know Your Numbers Campaign Program)', 'Healthy Cuts/Know Your Numbers Event at Community First Village', 'IT', 'Meeting with Cameron', 'Implementation Studios Planning & Strategy Meeting', 'Outreach & Navigation Leads 1 to 1 Strategy Meeting', 'BMHC + Community First Village Onsite Outreach Strategy Planning Huddle', 'BMHC + Gudlife Strategy Huddle', 'BMHC + Community First Village Onsite Outreach Strategy Huddle', 'Downtown Austin Community Court Onsite Outreach', 'Outreach Onboarding (Jordan Calbert)', 'BMHC + Gudlife Outreach Strategy Huddle', 'End of Week 1 to 1 Performance Review', 'BMHC + KAZI Basketball Tournament', 'BMHC Gudlife Meeting', 'BMHC Pflugerville Asset Mapping Activities', '100 Black Men of Austin Quarterly Partnership Review (QPR)', 'Onboarding', 'Outreach 1 to 1 Strategy Meetings', 'Impact Forms Follow Up Meeting', 'Community First Village Outreach Strategy Huddle', 'Any Baby Can Tour & Partnership Meeting', 'Housing Authority of Travis County (Self-Care Day) Outreach Event', 'psh support call with Dr Wallace', 'BMHC Tour (Austin Mayor Kirk Watson & Austin City Council Member District 4 "Chito" Vela)', 'PSH Audit for ECHO', 'BMHC + Community First Village Neighborhood Care Team Planning Meeting', 'Biweekly PSH staffing with ECHO', 'PSH file updates and case staffing', 'Child Inc Travis County HeadStart Program (Fatherhood Program Event)', 'BMHC + Breakthrough of Central Texas Partnership Discussion', 'Housing Authority of Travis County Quarterly Partnership Review (QPR)', 'PSH', 'Meeting', 'Training', 'BMHC & GUD LFE Huddle Meeting', 'BMHC Internal & External Emails and Phone Calls Performed', 'Manor 5K Planning Meeting & Follow Up Activities', 'HSO stakeholder meeting', 'outreach coordination meeting', 'Outreach & Navigation Team Leads Huddle', 'Implementation Studios Planning Meeting', 'homeless advocacy meeting', 'Central Health Virtual Lunch', 'Community First Village Onsite Outreach & Healthy Cuts Preventative Screenings', 'MOU conversation with Extended Stay America', 'PSH iPilot', 'End of Week Outreach Performance Reviews', 'Outreach Onboarding Activities (Jordan Calbert)', 'BMHC Gudlife Huddle', 'BMHC & GUD LIFE Weekly Huddle', 'Bi-Partner Neighbor Partner Engagement Meeting', 'BOLO list and placement', 'In-Person Key Leaders Huddle', 'weekly HMIS updates and phone calls for clients on BOLO list', 'HMIS monthly reports submission to ECHO', 'timesheet completion and submit to Dr. Wallace', 'client referrals/community partnership'
-]
-
-admin_categories = [
-    '1 to 1 Outreach Strategy Meetings',
-    'BMHC & GUD LIFE Huddle Meetings',
-    'Administrative & Communications',
-    'Research & Planning',
-    'Reports & Documentation',
-    'Financial & Budgeting',
-    'Human Resources (HR) & Office Management',
-    'Training & Onboarding',
-    'PSH & Client Support',
-    'Outreach & Engagement',
-    'Stakeholder & Key Leader Meetings',
-    'Performance & Reviews'
-]
-
-# print("Administrative Activity Unique Before:", df['Admin Activity'].unique().tolist())
-
-df['Admin Activity'] = (
-    df['Admin Activity']
-        .astype(str)
-        .str.strip()
-        .replace({
-        
-        "" : pd.NA,
-        
-        # 1 to 1 Outreach Strategy Meetings
-        '(4) Outreach 1 to 1 Strategy Meetings': '1 to 1 Outreach Strategy Meetings',
-        'Outreach Team Meeting': '1 to 1 Outreach Strategy Meetings',
-        'Outreach & Navigation Leads 1 to 1 Strategy Meeting': '1 to 1 Outreach Strategy Meetings',
-        'Outreach 1 to 1 Strategy Meetings': '1 to 1 Outreach Strategy Meetings',
-
-        # BMHC & GUD LIFE Huddle Meetings
-        'BMHC & GUD LFE Huddle Meeting': 'BMHC & GUD LIFE Huddle Meetings',
-        'BMHC Gudlife Huddle': 'BMHC & GUD LIFE Huddle Meetings',
-        'BMHC & GUD LIFE Weekly Huddle': 'BMHC & GUD LIFE Huddle Meetings',
-        'Key Leaders Huddle': 'BMHC & GUD LIFE Huddle Meetings',
-        'BMHC + Gudlife Strategy Huddle': 'BMHC & GUD LIFE Huddle Meetings',
-        'BMHC + Gudlife Outreach Strategy Huddle': 'BMHC & GUD LIFE Huddle Meetings',
-
-        # Administrative & Communications
-        'Communication & Correspondence': 'Administrative & Communications',
-        'BMHC Quarterly Team Meeting': 'Administrative & Communications',
-        'BMHC Team': 'Administrative & Communications',
-        'Weekly team meeting': 'Administrative & Communications',
-        'IT': 'Administrative & Communications',
-        'BMHC Internal & External Emails and Phone Calls Performed': 'Administrative & Communications',
-        'Meeting With Frost Bank': 'Administrative & Communications',
-        'Outreach Onboarding Activities (Jordan Calbert)': 'Administrative & Communications',
-
-        # Research & Planning
-        '2025 Calendar Year Outreach Preparation & Strategic Planning Activities': 'Research & Planning',
-        'Gudlife 2025 Strategic Planning Session': 'Research & Planning',
-        'Events Planning Meeting': 'Research & Planning',
-        'Implementation Studios Planning & Strategy Meeting': 'Research & Planning',
-        'Impact Forms Follow Up Meeting': 'Research & Planning',
-        'MOU conversation with Extended Stay America': 'Research & Planning',
-        'Implementation Studios Planning Meeting': 'Research & Planning',
-        'BMHC Pflugerville Asset Mapping Activities': 'Research & Planning',
-        'Housing Authority of Travis County Quarterly Partnership Review (QPR)': 'Research & Planning',
-
-        # Reports & Documentation
-        'Record Keeping & Documentation': 'Reports & Documentation',
-        'HMIS monthly reports submission to ECHO': 'Reports & Documentation',
-        'weekly HMIS updates and phone calls for clients on BOLO list': 'Reports & Documentation',
-
-        # Financial & Budgeting
-        'Financial & Budgetary Management': 'Financial & Budgeting',
-
-        # Human Resources (HR) & Office Management
-        'Office Management': 'Human Resources (HR) & Office Management',
-        'HR Support': 'Human Resources (HR) & Office Management',
-        'Compliance & Policy Enforcement': 'Human Resources (HR) & Office Management',
-        'timesheet completion and submit to Dr. Wallace': 'Human Resources (HR) & Office Management',
-
-        # Training & Onboarding
-        'Onboarding': 'Training & Onboarding',
-        'Outreach Onboarding (Jordan Calbert)': 'Training & Onboarding',
-        'Training': 'Training & Onboarding',
-
-        # PSH & Client Support
-        'psh support call with Dr Wallace': 'PSH & Client Support',
-        'PSH Audit for ECHO': 'PSH & Client Support',
-        'PSH': 'PSH & Client Support',
-        'PSH iPilot': 'PSH & Client Support',
-        'Biweekly PSH staffing with ECHO': 'PSH & Client Support',
-        'PSH file updates and case staffing': 'PSH & Client Support',
-        'client referrals/community partnership': 'PSH & Client Support',
-        'BMHC + Community First Village Neighborhood Care Team Planning Meeting': 'PSH & Client Support',
-
-        # Outreach & Engagement
-        'Community First Village Onsite Outreach': 'Outreach & Engagement',
-        'Healthy Cuts/Know Your Numbers Event at Community First Village': 'Outreach & Engagement',
-        'Community First Village Huddle': 'Outreach & Engagement',
-        'Outreach & Navigation Team Leads Huddle': 'Outreach & Engagement',
-        'Downtown Austin Community Court Onsite Outreach': 'Outreach & Engagement',
-        'BMHC + Community First Village Onsite Outreach Strategy Planning Huddle': 'Outreach & Engagement',
-        'BMHC + Community First Village Onsite Outreach Strategy Huddle': 'Outreach & Engagement',
-        'Outreach & Navigation Leads 1 to 1 Strategy Meeting': 'Outreach & Engagement',
-        'Community First Village Outreach Strategy Huddle': 'Outreach & Engagement',
-        'Outreach & Engagement': 'Outreach & Engagement',
-        'Outreach Team Meeting': 'Outreach & Engagement',
-        'Any Baby Can Tour & Partnership Meeting': 'Outreach & Engagement',
-        'Housing Authority of Travis County (Self-Care Day) Outreach Event': 'Outreach & Engagement',
-        'Outreach Onboarding Activities (Jordan Calbert)': 'Outreach & Engagement',
-        'Outreach Onboarding (Jordan Calbert)': 'Outreach & Engagement',
-        'homeless advocacy meeting': 'Outreach & Engagement',
-        'Community First Village Onsite Outreach & Healthy Cuts Preventative Screenings': 'Outreach & Engagement',
-        'BOLO list and placement': 'Outreach & Engagement',
-
-        # Stakeholder & Key Leader Meetings
-        'St. David\'s + Kazi 88.7FM Strategic Partnership Meeting & Strategy Planning Discussion/Activities': 'Stakeholder & Key Leader Meetings',
-        'Travis County Judge Andy Brown & Travis County Commissioner Ann Howard BMHC Tour & Discussion': 'Stakeholder & Key Leader Meetings',
-        'Key Leaders Huddle': 'Stakeholder & Key Leader Meetings',
-        'BMHC Gudlife Meeting': 'Stakeholder & Key Leader Meetings',
-        '100 Black Men of Austin Quarterly Partnership Review (QPR)': 'Stakeholder & Key Leader Meetings',
-        'National Kidney Foundation Strategy Meeting (Know Your Numbers Campaign Program)': 'Stakeholder & Key Leader Meetings',
-        'Meeting with Cameron': 'Stakeholder & Key Leader Meetings',
-        'BMHC + Gudlife Strategy Huddle': 'Stakeholder & Key Leader Meetings',
-        'BMHC Gudlife Huddle': 'Stakeholder & Key Leader Meetings',
-        'BMHC & Gudlife Strategy Huddle': 'Stakeholder & Key Leader Meetings',
-        'BMHC + Breakthrough of Central Texas Partnership Discussion': 'Stakeholder & Key Leader Meetings',
-        'Housing Authority of Travis County Quarterly Partnership Review (QPR)': 'Stakeholder & Key Leader Meetings',
-        'Bi-Partner Neighbor Partner Engagement Meeting': 'Stakeholder & Key Leader Meetings',
-        'In-Person Key Leaders Huddle': 'Stakeholder & Key Leader Meetings',
-        'Any Baby Can Tour & Partnership Meeting': 'Stakeholder & Key Leader Meetings',
-        'PSH Audit for ECHO': 'Stakeholder & Key Leader Meetings',
-        'Meeting': 'Stakeholder & Key Leader Meetings',
-
-        # Performance & Reviews
-        'End of Week 1 to 1 Performance Review': 'Performance & Reviews',
-        'End of Week Outreach Performance Reviews': 'Performance & Reviews',
-
-        # Special Event Support
-        "Men's Mental Health 1st Saturdays": 'Special Event Support',
-        'Special Events Team Meeting': 'Special Event Support',
-        'BMHC + KAZI Basketball Tournament': 'Special Event Support',
-        'BMHC Tour (Austin Mayor Kirk Watson & Austin City Council Member District 4 "Chito" Vela)': 'Special Event Support',
-        'Child Inc Travis County HeadStart Program (Fatherhood Program Event)': 'Special Event Support',
-        'Manor 5K Planning Meeting & Follow Up Activities': 'Special Event Support',
-        'Special Event Support': 'Special Event Support',
-
-        # Outreach & Engagement
-        'HSO stakeholder meeting': 'Outreach & Engagement',
-        'outreach coordination meeting': 'Outreach & Engagement',
-        'Central Health Virtual Lunch': 'Stakeholder & Key Leader Meetings'
-    })
-)
-
-df_admin = df[df['Admin Activity'].notna()]
-
-# admin_mode = df_admin['Admin Activity'].mode()[0]
-# print("Admin Mode:", admin_mode)
-# df['Admin Activity'] = df['Admin Activity'].fillna(admin_mode)
-
-# Check the changes
-# print("Administrative Activity Unique After Replacement:", df['Admin Activity'].unique().tolist())
-# print("Admin value counts:", df_admin['Admin Activity'].value_counts())
-
-# Find any remaining unmatched purposes
-unmatched_admin = df_admin[~df_admin['Admin Activity'].isin(admin_categories)]['Admin Activity'].unique().tolist()
-# print("Unmatched Administrative Activities:", unmatched_admin)
-
-# Group the data by 'Month' and 'Admin Activity' and count occurrences
-df_admin_counts = (
-    df_admin.groupby(['Month', 'Admin Activity'], sort=True)
-    .size()
-    .reset_index(name='Count')
-)
-
-# Assign categorical ordering to the 'Month' column
-df_admin_counts['Month'] = pd.Categorical(
-    df_admin_counts['Month'],
-    categories=months_in_quarter,
-    ordered=True
-)
-
-# Sort df:
-df_admin_counts = df_admin_counts.sort_values(by=['Month', 'Admin Activity'])
-
-# Create the grouped bar chart
-admin_fig = px.bar(
-    df_admin_counts,
-    x='Month',
-    y='Count',
-    color='Admin Activity',
-    barmode='group',
-    text='Count',
-    labels={
-        'Count': 'Number of Activities',
-        'Month': 'Month',
-        'Admin Activity': 'Administrative Activity'
-    }
-).update_layout(
-    title_x=0.5,
-    xaxis_title='Month',
-    yaxis_title='Count',
-    height=900,  # Adjust graph height
-    title=dict(
-        text= f'{current_quarter } Administrative Activities by Month',
-        x=0.5, 
-        font=dict(
-            size=35,
-            family='Calibri',
-            color='black',
-            )
-    ),
-    font=dict(
-        family='Calibri',
-        size=17,
-        color='black'
-    ),
-    xaxis=dict(
-        tickmode='array',
-        tickvals=df_admin_counts['Month'].unique(),
-        tickangle=-35  # Rotate x-axis labels for better readability
-    ),
-    legend=dict(
-        # title='Administrative Activity',
-        title=None,
-        orientation="v",  # Vertical legend
-        x=1.05,  # Position legend to the right
-        xanchor="left",  # Anchor legend to the left
-        y=1,  # Position legend at the top
-        yanchor="top"  # Anchor legend at the top
-    ),
-    margin=dict(l=0, r=0, t=0, b=0),
-    hovermode='x unified'  # Display unified hover info
-).update_traces(
-    textposition='outside',  # Display text above bars
-    textfont=dict(size=30),  # Increase text size in each bar
-    hovertemplate=(
-        '<br>'
-        '<b>Count: </b>%{y}<br>'  # Count
-    ),
-    customdata=df_admin_counts['Admin Activity'].values.tolist()
-)
-
-df_admin = df_admin.groupby('Admin Activity').size().reset_index(name='Count')
-
-# Create the pie chart for Administrative Activity distribution
-admin_pie = px.pie(
-    df_admin,
-    names='Admin Activity',
-    values='Count',
-    color='Admin Activity',
-    height=800,
-    title= f'{current_quarter} Distribution of Administrative Activities'
-).update_layout(
-    title=dict(
-        x=0.5,
-        text= f'{current_quarter} Distribution of Administrative Activities',  # Title text
-        font=dict(
-            size=35,  # Increase this value to make the title bigger
-            family='Calibri',  # Optional: specify font family
-            color='black'  # Optional: specify font color
-        ),
-    ),  
-    margin=dict(
-        t=150,  # Adjust the top margin (increase to add more padding)
-        l=20,   # Optional: left margin
-        r=20,   # Optional: right margin
-        b=20    # Optional: bottom margin
-    )
-).update_traces(
-    rotation=140,  # Rotate pie chart 90 degrees counterclockwise
-    textfont=dict(size=19),  # Increase text size
-    textinfo='value+percent',
-    # texttemplate='<br>%{percent:.1%}',  # Format percentage as whole numbers
-    hovertemplate='<b>%{label}</b>: %{value}<extra></extra>'  # Hover details
-)
 
 # --------------------- Care Network Activity DF ------------------------ #
 
-# Value counts for 'Care Activity'
-care_value_counts = df['Care Activity'].value_counts()
 
-# Convert the Series to a DataFrame
-care_value_counts_df = care_value_counts.reset_index() 
-care_value_counts_df.columns = ['Care Activity', 'Count']  # Rename columns
-
-# Save the DataFrame to an Excel file
-care_output_path = os.path.join(script_dir, 'care_activity_counts.xlsx')
-
-care_value_counts_df.to_excel(care_output_path, index=False)
-print(f"Care activity counts saved to {care_output_path}")
-
-# print(df['Care Network Activity'].unique().tolist())
-# print("Care Network Activity Value Counts:", care_value_counts)
-
-custom_colors = {
-    'January': 'Blues',
-    'February': 'Greens',
-    'March': 'Oranges',
-    'April': 'Purples',
-    'May': 'Reds',
-    'June': 'Greys',
-    'July': 'YlGn',
-    'August': 'YlOrBr',
-    'September': 'PuRd',
-    'October': 'BuPu',
-    'November': 'GnBu',
-    'December': 'YlGnBu',
-# The code snippet provided is a Python dictionary with a key-value pair. The key is 'Count'
-# and the value is 'Number of Submissions'. This dictionary is used to store information
-# related to the count of submissions.
-}
-
-care_unique = [
-'Clinical Provider', '', 'Government', 'BMHC Team', 'SDoH Provider', 'Outreach & Navigation', 'Religious', 'Movement is Medicine', "Men's Mental Health 1st Saturdays at BMHC (Man In Man)", 'Give Back Program', 'Movement is Medicine ', 'Academic', 'Movement is medicine', 'Work Force Development', 'Community Partnership in media', 'BMHC - Austin', 'Policy Documentation Reviewed, Signed & Sent', 'BMHC - Pflugerville Navigation Meeting', 'Care Network Prospect', 'Pink Bus Program', 'Community partnership for health and wellness', 'Health Resource', 'BMHC + Sustainable Food Center Follow Up Meeting', 'ECHO Pilot Program', 'Administrative Support', 'Outreach Onboarding (Jordan Calbert)', 'Community Partner', 'Black Nurses Association Community Partner', 'ECHO PSH Pilot Program ', 'KAZI 88.7 FM (Marketing & Exposure)', 'Community First Village Onsite Outreach', 'Discussed coordination and referral services for D. Bell', 'Community ', 'University of Texas at Austin', 'PSH CASEWORKER UPDATES AND CALLS', 'PSH HMIS updates and caseworker notes', 'Community Fitness Gym', 'Caseworker calls for PSH', 'PSH caseworker and BMHC updates', 'Outreach Team Meeting', 'Agency Partnership/Collaboration ', 'Kensington Integral Care housing ', 'community partnerships/engagement', 'Referals'
-]
-
-care_categories = [
-    'Clinical Providers & Government',
-    'BMHC & Team Activities',
-    'Outreach & Navigation',
-    'Health & Wellness Programs',
-    'Academic & Workforce Development',
-    'Community Partnerships & Media',
-    'PSH & Case Management',
-    'Administrative & Support Services',
-    'Special Programs & Initiatives',
-    'Partner & Stakeholder Engagement',
-    'Administrative & Communications',
-    'Outreach & Engagement',
-    'Stakeholder & Key Leader Meetings',
-    'Research & Planning',
-    'Reports & Documentation',
-    'Special Event Support',
-    'Financial & Budgeting',
-    'Human Resources & Office Management',
-    'BMHC & GUD LIFE Huddle Meetings',
-    'Performance & Reviews',
-    'Training & Onboarding',
-    'PSH & Client Support',
-    '1 to 1 Outreach Strategy Meetings',
-]
-
-# print("Care Network Activity Unique Before:", df['Care Activity'].unique().tolist())
-
-df['Care Activity'] = (
-    df['Admin Activity']
-    .astype(str)
-    .str.strip()
-    .replace({
-        
-        "" : pd.NA,
-        "<NA>": pd.NA,
-        
-        'Clinical Provider': 'Clinical Provider',
-        'Government': 'Government',
-        'BMHC Team': 'BMHC Team',
-        'SDoH Provider': 'SDoH Provider',
-        'Outreach & Navigation': 'Outreach & Navigation',
-        'Religious': 'Religious',
-        'Movement is Medicine': 'Movement is Medicine',
-        "Men's Mental Health 1st Saturdays at BMHC (Man In Man)": "Men's Mental Health 1st Saturdays at BMHC (Man In Man)",
-        'Give Back Program': 'Give Back Program',
-        'Movement is Medicine ': 'Movement is Medicine',
-        'Academic': 'Academic',
-        'Movement is medicine': 'Movement is Medicine',
-        'Work Force Development': 'Work Force Development',
-        'Community Partnership in media': 'Community Partnership in Media',
-        'BMHC - Austin': 'BMHC - Austin',
-        'Policy Documentation Reviewed, Signed & Sent': 'Policy Documentation Reviewed, Signed & Sent',
-        'BMHC - Pflugerville Navigation Meeting': 'BMHC - Pflugerville Navigation Meeting',
-        'Care Network Prospect': 'Care Network Prospect',
-        'Pink Bus Program': 'Pink Bus Program',
-        'Community partnership for health and wellness': 'Community Partnership for Health and Wellness',
-        'Health Resource': 'Health Resource',
-        'BMHC + Sustainable Food Center Follow Up Meeting': 'BMHC + Sustainable Food Center Follow Up Meeting',
-        'ECHO Pilot Program': 'ECHO Pilot Program',
-        'Administrative Support': 'Administrative Support',
-        'Outreach Onboarding (Jordan Calbert)': 'Outreach Onboarding (Jordan Calbert)',
-        'Community Partner': 'Community Partner',
-        'Black Nurses Association Community Partner': 'Black Nurses Association Community Partner',
-        'ECHO PSH Pilot Program ': 'ECHO PSH Pilot Program',
-        'KAZI 88.7 FM (Marketing & Exposure)': 'KAZI 88.7 FM (Marketing & Exposure)',
-        'Community First Village Onsite Outreach': 'Community First Village Onsite Outreach',
-        'Discussed coordination and referral services for D. Bell': 'Discussed Coordination and Referral Services for D. Bell',
-        'Community ': 'Community',
-        'University of Texas at Austin': 'University of Texas at Austin',
-        'Human Resources (HR) & Office Management': 'Human Resources & Office Management',
-
-        # Standardize case for PSH activities
-        'PSH CASEWORKER UPDATES AND CALLS': 'PSH Caseworker Updates and Calls',
-        'PSH HMIS updates and caseworker notes': 'PSH HMIS Updates and Caseworker Notes',
-        'Community Fitness Gym': 'Community Fitness Gym',
-        'Caseworker calls for PSH': 'Caseworker Calls for PSH',
-        'PSH caseworker and BMHC updates': 'PSH Caseworker and BMHC Updates',
-
-        # Meeting-related activities
-        'Outreach Team Meeting': 'Outreach Team Meeting',
-        'Agency Partnership/Collaboration ': 'Agency Partnership/Collaboration',
-        'Kensington Integral Care housing ': 'Kensington Integral Care Housing',
-        'community partnerships/engagement': 'Community Partnerships/Engagement',
-
-        # Correct spelling of "Referrals"
-        'Referals': 'Referrals',
-
-        # Unmatched Care Network Activities
-        'Administrative & Communications': 'Administrative & Communications',
-        '1 to 1 Outreach Strategy Meetings': '1 to 1 Outreach Strategy Meetings',
-        'Outreach & Engagement': 'Outreach & Engagement',
-        'Stakeholder & Key Leader Meetings': 'Stakeholder & Key Leader Meetings',
-        'Research & Planning': 'Research & Planning',
-        'Reports & Documentation': 'Reports & Documentation',
-        'Special Event Support': 'Special Event Support',
-        'Financial & Budgeting': 'Financial & Budgeting',
-        'Human Resources (HR) & Office Management': 'Human Resources (HR) & Office Management',
-        'BMHC & GUD LIFE Huddle Meetings': 'BMHC & GUD LIFE Huddle Meetings',
-        'Performance & Reviews': 'Performance & Reviews',
-        'Training & Onboarding': 'Training & Onboarding',
-        'PSH & Client Support': 'PSH & Client Support'
-    })
-)
-
-df_care = df[df['Care Activity'].notna()]
-
-# Find any remaining unmatched purposes
-unmatched_care = df_care[~df_care['Care Activity'].isin(care_categories)]['Care Activity'].unique().tolist()
-
-# Find any remaining unmatched purposes
-unmatched_care = df_care[~df_care['Care Activity'].isin(care_categories)]['Care Activity'].unique().tolist()
-# print("Unmatched Care Network Activities:", unmatched_care)
-
-# Group the data by 'Month' and 'Admin Activity' and count occurrences
-df_care_counts = (
-    df_care.groupby(['Month', 'Care Activity'], sort=True)
-    .size()
-    .reset_index(name='Count')
-)
-
-# Assign categorical ordering to the 'Month' column
-df_care_counts['Month'] = pd.Categorical(
-    df_care_counts['Month'],
-    categories=months_in_quarter,
-    ordered=True
-)
-
-# Sort df:
-df_care_counts = df_care_counts.sort_values(by=['Month', 'Care Activity'])
-
-# Create the grouped bar chart
-care_fig = px.bar(
-    df_care_counts,
-    x='Month',
-    y='Count',
-    color='Care Activity',
-    barmode='group',
-    text='Count',
-    title= f'{current_quarter} Care Network Activities by Month',
-    labels={
-        'Count': 'Number of Activities',
-        'Month': 'Month',
-        'Care Activity': 'Care Network Activity'
-    }
-).update_layout(
-    xaxis_title='Month',
-    yaxis_title='Count',
-    height=900,  # Adjust graph height
-    title=dict(
-        text= f'{current_quarter} Care Network Activities by Month',
-        x=0.5, 
-        font=dict(
-            size=35,
-            family='Calibri',
-            color='black',
-            )
-    ),
-    font=dict(
-        family='Calibri',
-        size=17,
-        color='black'
-    ),
-    xaxis=dict(
-        tickmode='array',
-        tickvals=df_care_counts['Month'].unique(),
-        tickangle=-35  # Rotate x-axis labels for better readability
-    ),
-    legend=dict(
-        # title='Administrative Activity',
-        title=None,
-        orientation="v",  # Vertical legend
-        x=1.05,  # Position legend to the right
-        xanchor="left",  # Anchor legend to the left
-        y=1,  # Position legend at the top
-        yanchor="top"  # Anchor legend at the top
-    ),
-    hovermode='x unified'  # Display unified hover info
-).update_traces(
-    textposition='outside',  # Display text above bars
-    textfont=dict(size=30),  # Increase text size in each bar
-    hovertemplate=(
-        '<br>'
-        '<b>Count: </b>%{y}<br>'  # Count
-    ),
-    customdata=df_care_counts['Care Activity'].values.tolist()
-)
-
-df_care = df_care.groupby('Care Activity').size().reset_index(name='Count')
-
-# Create the pie chart for Administrative Activity distribution
-care_pie = px.pie(
-    df_care,
-    names='Care Activity',
-    values='Count',
-    color='Care Activity',
-    height=800,
-    title= f'{current_quarter} Distribution of Care Network Activities'
-).update_layout(
-    title=dict(
-        x=0.5,
-        text= f'{current_quarter} Distribution of Care Network Activities',  # Title text
-        font=dict(
-            size=35,  # Increase this value to make the title bigger
-            family='Calibri',  # Optional: specify font family
-            color='black'  # Optional: specify font color
-        ),
-    ),  # Center-align the title
-    margin=dict(
-        t=150,  # Adjust the top margin (increase to add more padding)
-        l=20,   # Optional: left margin
-        r=20,   # Optional: right margin
-        b=20    # Optional: bottom margin
-    )
-).update_traces(
-    rotation=140,  # Rotate pie chart 90 degrees counterclockwise
-    textfont=dict(size=19),  # Increase text size
-    textinfo='value+percent',
-    # texttemplate='<br>%{percent:.1%}',  # Format percentage as whole numbers
-    hovertemplate='<b>%{label}</b>: %{value}<extra></extra>'  # Hover details
-)
-
-# --------------------- Community Outreach Activity DF ------------------------ #
-
-# Value counts for 'Outreach Activity'
-outreach_value_counts = df['Outreach Activity'].value_counts()
-
-# Convert the Series to a DataFrame
-outreach_value_counts_df = outreach_value_counts.reset_index()
-outreach_value_counts_df.columns = ['Outreach Activity', 'Count']  # Rename columns
-
-# Save the DataFrame to an Excel file
-outreach_output_path = os.path.join(script_dir, 'outreach_activity_counts.xlsx')
-
-outreach_value_counts_df.to_excel(outreach_output_path, index=False)
-print(f"Outreach activity counts saved to {outreach_output_path}")
-
-# print("Community Outreach Activities Unique Before:", df['Outreach Activity'].unique().tolist())
-# print("Community Outreach Activities Value Counts: \n", outreach_value_counts)
-
-comm_unique = [
-    '', 'Meeting', 'Advocacy', 'Healthy Cuts Event', 'Presentation', 'Onsite Outreach ', 'Movement is medicine', 'Weekly Meeting Updates', 'NA', 'NA - Team Meeting', 'Movement is Medicine', ' Movement is Medicine', 'Potential partnering for mammogram services on site.', 'Healthy Cuts/Know Your Numbers Event at Community First Village', 'CTAAF Conference Presentation (advocacy of BMHC + AMEN movement is medicine ) ', 'BMHC Weekly Team Huddle ', 'Outreach 1 to 1 Strategy Meetings', 'Community First Village Onsite Outreach', 'Movement Is Medicine', 'Downtown Austin Community Court Onsite Outreach', 'Tabling', 'BMHC + KAZI Basketball Tournament', 'Outreach & Navigation', 'Health Event', 'ECHO Pilot Program ', 'Advocacy, Tabling, Presentation', 'Coordination of services', 'Collaboration', 'PSH Caseworker calls and updates', 'PSH HMIS Updates', 'PSH File updates', 'Collaboration of development of co-programs (ministry and GUD LIFE)', 'Discovery Meeting: Learn about each organization’s mission, values, and potential alignment.', 'psh updates', 'build relationship ', 'Building Relationships ', 'meeting via phone'
-]
-
-comm_categories = [
-    'Advocacy & Presentations',
-    'Outreach Activities',
-    'Meetings',
-    'PSH & Case Management',
-    'Health Events',
-    'Miscellaneous',
-]
-
-# print("Community Outreach Activity Unique Before:", df['Outreach Activity'].unique().tolist())
-
-df['Outreach Activity'] = (
-    df['Outreach Activity']
-    .astype(str)
-    .str.strip()
-    .replace({
-        
-        "" : pd.NA,
-        "<NA>" : pd.NA,
-        
-        # Advocacy & Presentations
-        'Advocacy': 'Advocacy & Presentations',
-        'Presentation': 'Advocacy & Presentations',
-        'CTAAF Conference Presentation (advocacy of BMHC + AMEN movement is medicine )': 'Advocacy & Presentations',
-        'Advocacy, Tabling, Presentation': 'Advocacy & Presentations',
-        
-        # Outreach Activities
-        'Onsite Outreach ': 'Outreach Activities',
-        'Community First Village Onsite Outreach': 'Outreach Activities',
-        'Downtown Austin Community Court Onsite Outreach': 'Outreach Activities',
-        'Outreach & Navigation': 'Outreach Activities',
-        'Healthy Cuts/Know Your Numbers Event at Community First Village': 'Outreach Activities',
-        'Healthy Cuts Event': 'Outreach Activities',
-        'Outreach 1 to 1 Strategy Meetings': 'Outreach Activities',
-        'BMHC + KAZI Basketball Tournament': 'Outreach Activities',
-        
-        # Meetings
-        'Meeting': 'Meetings',
-        'Weekly Meeting Updates': 'Meetings',
-        'BMHC Weekly Team Huddle ': 'Meetings',
-        'NA - Team Meeting': 'Meetings',
-        'NA': 'Meetings',
-        'Movement is medicine': 'Meetings',  # Assuming this can be categorized as a type of recurring meeting/event
-        'Movement Is Medicine': 'Meetings',
-        ' Movement is Medicine': 'Meetings',  # Handling spacing issues
-        
-        # PSH & Case Management
-        'PSH Caseworker calls and updates': 'PSH & Case Management',
-        'PSH HMIS Updates': 'PSH & Case Management',
-        'PSH File updates': 'PSH & Case Management',
-        'psh updates': 'PSH & Case Management',
-        'Building Relationships ': 'PSH & Case Management',
-        'build relationship ': 'PSH & Case Management',
-        'Coordination of services': 'PSH & Case Management',
-        
-        # Health Events
-        'Health Event': 'Health Events',
-        'Movement is medicine': 'Health Events',
-        'Healthy Cuts/Know Your Numbers Event at Community First Village': 'Health Events',
-        
-        # Miscellaneous
-        'Tabling': 'Miscellaneous',
-        'Potential partnering for mammogram services on site.': 'Miscellaneous',
-        'Discovery Meeting: Learn about each organization’s mission, values, and potential alignment.': 'Miscellaneous',
-        'meeting via phone': 'Miscellaneous',
-        'Collaboration': 'Miscellaneous',
-        'Collaboration of development of co-programs (ministry and GUD LIFE)': 'Miscellaneous',
-        
-        # Unmatched Community Outreach Activities
-        'Onsite Outreach': 'Outreach Activities',
-        'Movement is Medicine': 'Meetings',
-        'BMHC Weekly Team Huddle': 'Meetings',
-        'ECHO Pilot Program': 'Health Events',
-        'build relationship': 'PSH & Case Management',
-        'Building Relationships': 'PSH & Case Management',
-    })
-)
-
-df_comm = df[df['Outreach Activity'].notna()]
-
-# Find any remaining unmatched purposes
-unmatched_comm = df_comm[~df_comm['Outreach Activity'].isin(comm_categories)]['Outreach Activity'].unique().tolist()
-# print("Unmatched Community Outreach Activities:", unmatched_comm)
-
-# print("Community Outreach Activity Unique After:", df['Outreach Activity'].unique().tolist())
-
-# Group the data by 'Month' and 'Community Outreach Activity:' and count occurrences
-df_comm_counts = (
-    df.groupby(['Month', 'Outreach Activity'], sort=False)
-    .size()
-    .reset_index(name='Count')
-)
-
-# Assign categorical ordering to the 'Month' column
-df_comm_counts['Month'] = pd.Categorical(
-    df_comm_counts['Month'],
-    categories=months_in_quarter,
-    ordered=True
-)
-
-# Sort df
-df_comm_counts = df_comm_counts.sort_values(by=['Month', 'Outreach Activity'])
-
-# Create the grouped bar chart
-comm_fig = px.bar(
-    df_comm_counts,
-    x='Month',
-    y='Count',
-    color='Outreach Activity',
-    barmode='group',
-    text='Count',
-    labels={
-        'Count': 'Number of Activities',
-        'Month': 'Month',
-        'Outreach Activity': 'Community Outreach Activity'
-    }
-).update_layout(
-    xaxis_title='Month',
-    yaxis_title='Count',
-    height=900,  # Adjust graph height
-    title=dict(
-        text= f'{current_quarter} Community Outreach Activities By Month',
-        x=0.5, 
-        font=dict(
-            size=35,
-            family='Calibri',
-            color='black',
-            )
-    ),
-    font=dict(
-        family='Calibri',
-        size=17,
-        color='black'
-    ),
-    xaxis=dict(
-        tickmode='array',
-        tickvals=df_comm_counts['Month'].unique(),
-        tickangle=-35  # Rotate x-axis labels for better readability
-    ),
-    legend=dict(
-        title='',
-        orientation="v",  # Vertical legend
-        x=1.05,  # Position legend to the right
-        xanchor="left",  # Anchor legend to the left
-        y=1,  # Position legend at the top
-        yanchor="top"  # Anchor legend at the top
-    ),
-    hovermode='x unified'  # Display unified hover info
-).update_traces(
-    textposition='outside',  # Display text above bars
-    textfont=dict(size=30),  
-    hovertemplate=(
-        '<br>'
-        '<b>Count: </b>%{y}<br>'  # Count
-    ),
-    customdata=df_comm_counts['Outreach Activity'].values.tolist()
-)
-
-df_comm = df_comm.groupby('Outreach Activity').size().reset_index(name='Count')
-
-# Create the pie chart for Administrative Activity distribution
-comm_pie = px.pie(
-    df_comm,
-    names='Outreach Activity',
-    values='Count',
-    color='Outreach Activity',
-    height=800,
-    title= f'{current_quarter} Distribution of Community Outreach Activities'
-).update_layout(
-    title=dict(
-        x=0.5,
-        text= f'{current_quarter} Distribution of Community Outreach Activities',  # Title text
-        font=dict(
-            size=35,  # Increase this value to make the title bigger
-            family='Calibri',  # Optional: specify font family
-            color='black'  # Optional: specify font color
-        ),
-    ),  # Center-align the title
-    margin=dict(
-        t=250,  # Adjust the top margin (increase to add more padding)
-        l=20,   # Optional: left margin
-        r=20,   # Optional: right margin
-        b=20    # Optional: bottom margin
-    )
-).update_traces(
-    rotation=140, 
-    textfont=dict(size=19),  # Increase text size
-    textinfo='value+percent',
-    #  texttemplate='<br>%{value}\n %{percent:.1%}',  # Format to show both value and percentage
-    hovertemplate='<b>%{label}</b>: %{percent}<extra></extra>'  # Hover details
-)
 
 # ------------------------ Person Submitting Form DF ---------------------------- #
 
-person_unique = [
-    'Larry Wallace Jr.', 
-    'Cameron Morgan',
-    'Sonya Hosey', 
-    'Kiounis Williams', 
-    'Antonio Montgomery', 
-    'Toya Craney', 
-    'KAZI 88.7 FM Radio Interview & Preparation', 
-    'Kim Holiday', 
-    'Jordan Calbert', 
-    'Dominique Street', 
-    'Eric Roberts'
-]
 
-# print("Person Unique Before:", df["Person submitting this form:"].unique().tolist())
-
-# Create a new dataframe with 'Person' and 'Date of Activity'
-df_person = df[['Person', 'Date of Activity']].copy()
-
-# Remove trailing whitespaces and perform the replacements
-df['Person'] = (
-    df['Person']
-    .str.strip()
-    .replace({
-        "Larry Wallace Jr": "Larry Wallace Jr.",
-        "`Larry Wallace Jr": "Larry Wallace Jr.",
-        "Antonio Montggery": "Antonio Montgomery",
-        "KAZI 88.7 FM Radio Interview & Preparation": "Larry Wallace Jr.",
-    })
-)
-
-# Group the data by 'Month' and 'Person' and count occurrences
-df_person_counts = (
-    df.groupby(['Month', 'Person'], sort=True)
-    .size()
-    .reset_index(name='Count')
-)
-
-# Assign categorical ordering to the 'Month' column
-df_person_counts['Month'] = pd.Categorical(
-    df_person_counts['Month'],
-    categories=months_in_quarter,
-    ordered=True
-)
-
-# Sort df
-df_person_counts = df_person_counts.sort_values(by=['Month', 'Person'])
-
-# Create the grouped bar chart
-person_fig = px.bar(
-    df_person_counts,
-    x='Month',
-    y='Count',
-    color='Person',
-    barmode='group',
-    text='Count',
-    title=f'{current_quarter} Form Submissions by Month',
-    labels={
-        'Count': 'Number of Submissions',
-        'Month': 'Month',
-        'Person': 'Person'
-    }
-).update_layout(
-    title_x=0.5,
-    xaxis_title='Month',
-    yaxis_title='Count',
-    height=900,  # Adjust graph height
-    title=dict(
-        text= f'{current_quarter} Form Submissions by Month',
-        x=0.5, # Center title
-        font=dict(
-            size=35,
-            family='Calibri',
-            color='black',
-            )
-    ),
-    font=dict(
-        family='Calibri',
-        size=17,
-        color='black'
-    ),
-    xaxis=dict(
-        tickmode='array',
-        tickvals=df_person_counts['Month'].unique(),
-        tickangle=-35  # Rotate x-axis labels for better readability
-    ),
-    legend=dict(
-        title='',
-        orientation="v",  # Vertical legend
-        x=1.05,  # Position legend to the right
-        xanchor="left",  # Anchor legend to the left
-        y=1,  # Position legend at the top
-        yanchor="top"  # Anchor legend at the top
-    ),
-    hovermode='x unified',  # Display unified hover info
-    bargap=0.08,  # Reduce the space between bars
-    bargroupgap=0,  # Reduce space between individual bars in groups
-    margin = dict(t=80, b=100, l=0, r=0),
-).update_traces(
-    textposition='outside',  # Display text above bars
-    textfont=dict(size=30),  # Increase text size in each bar
-    hovertemplate=(
-        '<br>'
-        '<b>Count: </b>%{y}<br>'  # Count
-    ),
-    customdata=df_person_counts['Person'].values.tolist()
-).add_vline(
-    x=0.5,  # Adjust the position of the line
-    line_dash="dash",
-    line_color="gray",
-    line_width=2
-).add_vline(
-    x=1.5,  # Position of the second line
-    line_dash="dash",
-    line_color="gray",
-    line_width=2
-)
-
-# Group by person submitting form:
-df_pf = df.groupby('Person').size().reset_index(name='Count')
-
-# Pie chart:
-person_pie = px.pie(
-    df_pf,
-    names='Person',
-    values='Count',
-    color='Person',
-    height=850
-).update_layout(
-    title=dict(
-        x=0.5,
-        text=f'{current_quarter} Distribution of Form Submissions',  # Title text
-        font=dict(
-            size=35,  # Increase this value to make the title bigger
-            family='Calibri',  # Optional: specify font family
-            color='black'  # Optional: specify font color
-        ),
-    ),
-    legend=dict(
-        # title='',
-        title=None,
-        orientation="v",  # Vertical legend
-        x=1.05,  # Position legend to the right
-        xanchor="left",  # Anchor legend to the left
-        y=1,  # Position legend at the top
-        yanchor="top"  # Anchor legend at the top
-    ),
-    margin = dict(t=80, b=0, l=0, r=0),
-).update_traces(
-    rotation=70,  # Rotate pie chart 90 degrees counterclockwise
-    textfont=dict(size=19),  # Increase text size in each bar
-    texttemplate='%{value}<br>%{percent:.1%}',  # Format percentage as whole numbers
-    hovertemplate='<b>%{label}</b>: %{value}<extra></extra>'
-)
 
 # # ========================== DataFrame Table ========================== #
 
@@ -1452,7 +316,7 @@ app.layout = html.Div(
         className='divv', 
         children=[ 
           html.H1(
-              f'BMHC Partner Engagement Report {current_quarter} 2025', 
+              f'BMHC Review Submissions Report {current_quarter} {report_year}', 
               className='title'),
           html.H2( 
               '01/01/2025 - 3/31/2024', 
@@ -1488,7 +352,7 @@ html.Div(
                     children=[
                         dcc.Graph(
                             className='data',
-                            figure=engagement_table
+                            # figure=engagement_table
                         )
                     ]
                 )
@@ -1516,7 +380,7 @@ html.Div(
                         children=[
                             html.H1(
                             className='high3',
-                            children=[total_engagements]
+                            # children=[total_engagements]
                     ),
                         ]
                     )
@@ -1540,7 +404,7 @@ html.Div(
                         children=[
                             html.H1(
                             className='high4',
-                            children=[eng_hours]
+                            # children=[eng_hours]
                     ),
                         ]
                     )
@@ -1571,7 +435,7 @@ html.Div(
                         children=[
                             html.H1(
                             className='high3',
-                            children=[total_travel_time]
+                            # children=[total_travel_time]
                     ),
                         ]
                     )
@@ -1584,7 +448,7 @@ html.Div(
             className='graph2',
             children=[
                 dcc.Graph(
-                    figure=status_fig
+                    # figure=status_fig
                 )
             ]
         ),
@@ -1622,7 +486,7 @@ html.Div(
             className='graph1',
             children=[
                 dcc.Graph(
-                    figure=hours_fig
+                    # figure=hours_fig
                 )
             ]
         ),
@@ -1630,7 +494,7 @@ html.Div(
             className='graph2',
             children=[
                 dcc.Graph(
-                    figure=hours_pie
+                    # figure=hours_pie
                 )
             ]
         ),
@@ -1645,7 +509,7 @@ html.Div(
             className='graph1',
             children=[
                 dcc.Graph(
-                    figure=travel_fig
+                    # figure=travel_fig
                 )
             ]
         ),
@@ -1653,7 +517,7 @@ html.Div(
             className='graph2',
             children=[
                 dcc.Graph(
-                    figure=travel_pie
+                    # figure=travel_pie
                 )
             ]
         ),
@@ -1668,7 +532,7 @@ html.Div(
             className='graph0',
             children=[
                 dcc.Graph(
-                    figure=admin_fig
+                    # figure=admin_fig
                 )
             ]
         )
@@ -1682,22 +546,7 @@ html.Div(
             className='graph0',
             children=[
                 dcc.Graph(
-                    figure=admin_pie
-                )
-            ]
-        )
-    ]
-),
-
-# ROW 
-html.Div(
-    className='row3',
-    children=[
-        html.Div(
-            className='graph0',
-            children=[
-                dcc.Graph(
-                    figure=care_fig
+                    # figure=admin_pie
                 )
             ]
         )
@@ -1712,7 +561,7 @@ html.Div(
             className='graph0',
             children=[
                 dcc.Graph(
-                    figure=care_pie
+                    # figure=care_fig
                 )
             ]
         )
@@ -1727,7 +576,7 @@ html.Div(
             className='graph0',
             children=[
                 dcc.Graph(
-                    figure=comm_fig
+                    # figure=care_pie
                 )
             ]
         )
@@ -1742,7 +591,7 @@ html.Div(
             className='graph0',
             children=[
                 dcc.Graph(
-                    figure=comm_pie
+                    # figure=comm_fig
                 )
             ]
         )
@@ -1757,7 +606,7 @@ html.Div(
             className='graph0',
             children=[
                 dcc.Graph(
-                    figure=person_fig
+                    # figure=comm_pie
                 )
             ]
         )
@@ -1772,7 +621,22 @@ html.Div(
             className='graph0',
             children=[
                 dcc.Graph(
-                    figure=person_pie
+                    # figure=person_fig
+                )
+            ]
+        )
+    ]
+),
+
+# ROW 
+html.Div(
+    className='row3',
+    children=[
+        html.Div(
+            className='graph0',
+            children=[
+                dcc.Graph(
+                    # figure=person_pie
                 )
             ]
         )
