@@ -3,7 +3,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  /* margin: 20px 0px -20px 0px; */
+  margin: 10px 0px 0px 0px;
 }
 
 .title {
@@ -17,16 +17,8 @@
 .title2 {
   margin: 5px 0px 0px 0px;
   text-align: center;
-  color: rgb(42, 117, 118);
+  color: rgb(61, 103, 104);
   font-size: 25px;
-  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-}
-
-.count {
-  margin: 120px 0px 0px 0px;
-  text-align: center;
-  color: rgb(84, 84, 84);
-  font-size: 80px;
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
@@ -34,13 +26,13 @@
   display: flex;
   flex-direction: row;
   justify-content: center;
-  margin: 0px auto;
+  margin: -20px 0px 0px 0px;
 }
 
 .btn {
   display: inline-block;
   text-align: center;
-  margin: 20px 15px 15px 15px;
+  margin: 50px 15px 15px 15px;
   color:black;
   background-color: lightgray;
   border: 2px solid black;
@@ -59,65 +51,12 @@
   transform: translate(0, 3px); /* Move the button 10 pixels down on hover */
 }
 
-.row0 {
-  margin:0px 0px 0px 0px;
-  padding: 0px 0px 0px 0px;
-  display:flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-  border-bottom: 2px solid rgb(186, 186, 186);
-}
-
-.row00 {
-  margin:0px 0px 0px 0px;
-  padding: 0px 0px 0px 0px;
-  display:flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-  border-top: 2px solid rgb(186, 186, 186);
-}
-
-.row1 {
-  margin:0px 0px 0px 10px;
-  display:flex;
-  flex-direction: row;
-  justify-content: center;
-  text-align: center;
-}
-.row2 {
-  margin:0px 0px 0px 10px;
-  display:flex;
-  flex-direction: row;
-  justify-content: center;
-  text-align: center;
-}
-
-.row3 {
-  margin:0px 20px 0px 20px;
-  display:flex;
-  flex-direction: row;
-  justify-content: center;
-  text-align: center;
-  /* border-top: 2px solid rgb(186, 186, 186); */
-}
-
-.table-title1 {
-  font-size: 35px;
-  color: rgb(38, 38, 38);
-  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-  margin: 25px 0px -20px 0px;
-  padding: 30px 0px 0px 0px;
-  border-top: 2px solid rgb(186, 186, 186);
-}
-
 .table-title {
   font-size: 35px;
   color: rgb(38, 38, 38);
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-  margin: 25px 0px -20px 0px;
-  padding: 15px 0px 0px 0px;
+  margin: 0px 0px -20px 0px;
+  padding: 0px 0px 0px 0px;
 }
 
 .table2 {
@@ -154,6 +93,68 @@
   white-space: nowrap; /* Prevent line breaks */
 }
 
+/* ----------------------- Rows & Graphs -------------------------- */
+
+.row0 {
+  margin:0px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
+  display:flex;
+  flex-direction: row;
+  justify-content: center;
+  text-align: center;
+  /* border-bottom: 2px solid rgb(186, 186, 186); */
+}
+
+.row00 {
+  margin: 0px 0px 0px 0px;
+  padding: -50px 0px 0px 0px;
+  display:flex;
+  flex-direction: row;
+  justify-content: center;
+  text-align: center;
+  border-top: 2px solid rgb(186, 186, 186);
+}
+
+.row1 {
+  margin:0px 0px 0px 10px;
+  display:flex;
+  flex-direction: row;
+  justify-content: center;
+  text-align: center;
+}
+
+.row3 {
+  margin:0px 0px 0px 10px;
+  padding: 0px 0px 20px 10px;
+  display:flex;
+  flex-direction: row;
+  justify-content: center;
+  text-align: center;
+  height: 910px;
+  border-bottom: 2px solid rgb(186, 186, 186);
+}
+
+.graph0 {
+  margin: 0px 0px 0px 0px;
+  padding: 20px 0px 0px 0px;
+  width: 96%;
+  height: 800px;
+}
+
+.graph00 {
+  margin: 0px 0px 0px 0px;
+  padding: 40px 0px 0px 0px;
+  width: 96%;
+  height: 800px;
+}
+
+.graph00 {
+  margin: 0px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
+  width: 96%;
+  height: 800px;
+}
+
 .graph1 {
   border-right: 2px solid rgb(186, 186, 186);
   border-bottom: 2px solid rgb(186, 186, 186);
@@ -170,68 +171,6 @@
   width: 48%;
 }
 
-.graph3 {
-  /* border-top: 2px solid gray; */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  border-right: 2px solid rgb(186, 186, 186);
-  border-bottom: 2px solid rgb(186, 186, 186);
-  margin: 0px;
-  padding: 10px 20px 0px 0px;
-  width: 48%;
-}
-
-.graph4 {
-  /* border-top: 2px solid gray; */
-  /* border-left: 2px solid gray; */
-  border-bottom: 2px solid rgb(186, 186, 186);
-  margin: 0px;
-  padding: 10px 0px 0px 30px;
-  width: 48%;
-}
-
-.graph5 {
-  /* border-top: 2px solid gray; */
-  /* border-left: 2px solid gray; */
-  margin: 0px;
-  padding: 0px 0px 0px 0px;
-  width: 95%;
-}
-
-.graph7 {
-  /* border-top: 2px solid gray; */
-  /* border-left: 2px solid gray; */
-  margin: 0px;
-  padding: 0px 0px 0px 0px;
-  width: 48%;
-}
-
-.folium {
-  border: 2px solid;
-  border-color: rgb(186, 186, 186);
-  width: 90%;
-  height: 800px;
-  margin: 0px 0px 50px 0px;
-  padding: 0px 0px 0px 0px;
-}
-
-.zip {
-  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-  font-size: 20px;
-}
-
-.type-input {
-  /* display: flex;
-  align-self: center;
-  align-content:center;
-  align-items: center; */
-  width:20vw;
-  /* height: auto; */
-  font-size: 20px;
-  font-family: 'Calibri';
-}
 
 /* ================================ Highlights ================================== */
 
@@ -243,24 +182,11 @@
   width: 48%;
   /* height: 100%; */
   position: relative; /* Ensure positioning context */
-  margin: 0px;
+  margin: 0px 0px 0px 0px;
   padding: 10px 20px 50px 0px;
   border-right: 2px solid rgb(186, 186, 186);
   border-bottom: 2px solid rgb(186, 186, 186);
   border-top: 2px solid rgb(186, 186, 186);
-}
-.graph111 {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 48%;
-  /* height: 100%; */
-  position: relative; /* Ensure positioning context */
-  margin: 0px;
-  padding: 10px 20px 50px 0px;
-  border-right: 2px solid rgb(186, 186, 186);
-  border-bottom: 2px solid rgb(186, 186, 186);
 }
 
 .graph22 {
@@ -272,7 +198,7 @@
   /* height: 100%; */
   position: relative; /* Ensure positioning context */
   margin: 0px 0px 0px 0px;
-  padding: 10px 30px 50px 0px;
+  padding: 10px 20px 50px 0px;
   border-bottom: 2px solid rgb(186, 186, 186);
   border-top: 2px solid rgb(186, 186, 186);
 }
@@ -289,6 +215,19 @@
   margin: 0px;
   padding: 10px 0px 40px 0px;
   width: 98%;
+}
+
+.graph44 {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 48%;
+  /* height: 100%; */
+  position: relative; /* Ensure positioning context */
+  margin: 0px 0px 0px 0px;
+  padding: 10px 30px 50px 0px;
+  border-bottom: 2px solid rgb(186, 186, 186);
 }
 
 .circle1 {
@@ -329,19 +268,7 @@
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   font-size: 70px;
   margin: 0px 0px 0px 0px;
-  padding: 25px 13px 25px 13px;
-  display: flex; /* Use flexbox for alignment */
-  justify-content: center; /* Horizontal centering */
-  align-items: center; /* Vertical centering */
-  text-align: center; /* Ensure text inside is centered */
-  width: 100%; /* Ensure it spans full width */
-  height: 100%; /* Ensure it spans full height */
-}
-
-.high2 {
-  font-size: 70px;
-  margin: 0px 0px 0px 0px;
-  padding: 25px 13px 25px 13px;
+  padding: 10px 13px 25px 13px;
   display: flex; /* Use flexbox for alignment */
   justify-content: center; /* Horizontal centering */
   align-items: center; /* Vertical centering */
@@ -351,6 +278,18 @@
 }
 
 .high3 {
+  font-size: 70px;
+  margin: 0px 0px 0px 0px;
+  padding: 45px 15px 45px 15px;
+  display: flex; /* Use flexbox for alignment */
+  justify-content: center; /* Horizontal centering */
+  align-items: center; /* Vertical centering */
+  text-align: center; /* Ensure text inside is centered */
+  width: 100%; /* Ensure it spans full width */
+  height: 100%; /* Ensure it spans full height */
+}
+
+.high2 {
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   font-size: 70px;
   margin: 20px 0px 0px 0px;
@@ -366,7 +305,7 @@
 .high4 {
   font-size: 70px;
   margin: 0px 0px 0px 0px;
-  padding: 25px 13px 25px 13px;
+  padding: 40px 10px 40px 10px;
   display: flex; /* Use flexbox for alignment */
   justify-content: center; /* Horizontal centering */
   align-items: center; /* Vertical centering */
@@ -376,9 +315,21 @@
 }
 
 .high5 {
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  font-size: 70px;
+  margin: 20px 0px 0px 0px;
+  padding: 0px 13px 25px 13px;
+  display: flex; /* Use flexbox for alignment */
+  justify-content: center; /* Horizontal centering */
+  align-items: center; /* Vertical centering */
+  text-align: center; /* Ensure text inside is centered */
+  width: 100%; /* Ensure it spans full width */
+  height: 100%; /* Ensure it spans full height */
+}
+.high6 {
   font-size: 70px;
   margin: 0px 0px 0px 0px;
-  padding: 25px 12px 25px 12px;
+  padding: 20px 25px 20px 25px;
   display: flex; /* Use flexbox for alignment */
   justify-content: center; /* Horizontal centering */
   align-items: center; /* Vertical centering */
@@ -386,3 +337,5 @@
   width: 48%; /* Ensure it spans full width */
   height: 100%; /* Ensure it spans full height */
 }
+
+/* --------------------------------------------------------- */
