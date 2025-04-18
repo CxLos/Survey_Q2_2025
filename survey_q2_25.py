@@ -344,7 +344,7 @@ client_pie = px.pie(
 
 # The code is printing the unique values in the 'Health' column of a DataFrame called `df` as a list.
 # print("Unique Health Before: \n", df['Health'].unique().tolist())
-print("Health Value Counts: \n", df['Health'].value_counts())
+# print("Health Value Counts: \n", df['Health'].value_counts())
 
 health_unique =[
     
@@ -385,6 +385,7 @@ health_fig = px.bar(
     color='Health', 
     text='Count',  
     barmode='group',
+    custom_data=['Health'],
     labels={
         'Count': 'Count',
         'Month': 'Month',
@@ -436,7 +437,7 @@ health_fig = px.bar(
     textposition='auto', 
     textangle=0, 
     hovertemplate=( 
-        '<b>Name</b>: %{label}<br><b>Count</b>: %{y}<extra></extra>'  
+        '<b>Rating</b>: %{customdata[0]}<br><b>Count</b>: %{y}<extra></extra>'
     ),
 )
 
@@ -523,6 +524,7 @@ stress_fig = px.bar(
     color='Stress', 
     text='Count',  
     barmode='group',
+    custom_data=['Stress'],
     labels={
         'Count': 'Count',
         'Month': 'Month',
@@ -573,7 +575,7 @@ stress_fig = px.bar(
     textposition='auto', 
     textangle=0, 
     hovertemplate=( 
-        '<b>Name</b>: %{label}<br><b>Count</b>: %{y}<extra></extra>'  
+        '<b>Rating</b>: %{customdata[0]}<br><b>Count</b>: %{y}<extra></extra>'
     ),
 )
 
@@ -660,6 +662,7 @@ mental_fig = px.bar(
     color='Mental', 
     text='Count',  
     barmode='group',
+    custom_data=['Mental'],
     labels={
         'Count': 'Count',
         'Month': 'Month',
@@ -710,7 +713,7 @@ mental_fig = px.bar(
     textposition='auto', 
     textangle=0, 
     hovertemplate=( 
-        '<b>Name</b>: %{label}<br><b>Count</b>: %{y}<extra></extra>'  
+        '<b>Rating</b>: %{customdata[0]}<br><b>Count</b>: %{y}<extra></extra>'
     ),
 )
 
@@ -797,6 +800,7 @@ physical_fig = px.bar(
     color='Physical', 
     text='Count',  
     barmode='group',
+    custom_data=['Physical'],
     labels={
         'Count': 'Count',
         'Month': 'Month',
@@ -847,7 +851,7 @@ physical_fig = px.bar(
     textposition='auto', 
     textangle=0, 
     hovertemplate=( 
-        '<b>Name</b>: %{label}<br><b>Count</b>: %{y}<extra></extra>'  
+       '<b>Rating</b>: %{customdata[0]}<br><b>Count</b>: %{y}<extra></extra>'
     ),
 )
 
@@ -934,6 +938,7 @@ impression_fig = px.bar(
     color='Impression', 
     text='Count',  
     barmode='group',
+    custom_data=['Impression'],
     labels={
         'Count': 'Count',
         'Month': 'Month',
@@ -982,7 +987,7 @@ impression_fig = px.bar(
     textposition='auto', 
     textangle=0, 
     hovertemplate=( 
-        '<b>Name</b>: %{label}<br><b>Count</b>: %{y}<extra></extra>'  
+        '<b>Rating</b>: %{customdata[0]}<br><b>Count</b>: %{y}<extra></extra>'
     ),
 )
 
@@ -1067,6 +1072,7 @@ expectation_fig = px.bar(
     color='Expectation', 
     text='Count',  
     barmode='group',
+    custom_data=['Expectation'],
     labels={
         'Count': 'Count',
         'Month': 'Month',
@@ -1115,7 +1121,7 @@ expectation_fig = px.bar(
     textposition='auto', 
     textangle=0, 
     hovertemplate=( 
-        '<b>Name</b>: %{label}<br><b>Count</b>: %{y}<extra></extra>'  
+        '<b>Answer</b>: %{customdata[0]}<br><b>Count</b>: %{y}<extra></extra>' 
     ),
 )
 
@@ -1201,6 +1207,7 @@ care_fig = px.bar(
     color='Care', 
     text='Count',  
     barmode='group',
+    custom_data=['Care'],
     labels={
         'Count': 'Count',
         'Month': 'Month',
@@ -1249,7 +1256,7 @@ care_fig = px.bar(
     textposition='auto', 
     textangle=0, 
     hovertemplate=( 
-        '<b>Name</b>: %{label}<br><b>Count</b>: %{y}<extra></extra>'  
+        '<b>Answer</b>: %{customdata[0]}<br><b>Count</b>: %{y}<extra></extra>'
     ),
 )
 
@@ -1258,6 +1265,7 @@ care_pie = px.pie(
     names='Care',
     values='Count',
     color='Care',
+    custom_data=['Care'],
     height=550
 ).update_layout(
     title=dict(
@@ -1334,6 +1342,7 @@ outreach_fig = px.bar(
     color='Outreach', 
     text='Count',  
     barmode='group',
+    custom_data=['Outreach'],
     labels={
         'Count': 'Count',
         'Month': 'Month',
@@ -1382,7 +1391,7 @@ outreach_fig = px.bar(
     textposition='auto', 
     textangle=0, 
     hovertemplate=( 
-        '<b>Name</b>: %{label}<br><b>Count</b>: %{y}<extra></extra>'  
+        '<b>Answer</b>: %{customdata[0]}<br><b>Count</b>: %{y}<extra></extra>'
     ),
 )
 
@@ -1467,6 +1476,7 @@ healthy_cuts_fig = px.bar(
     color='Healthy Cuts', 
     text='Count',  
     barmode='group',
+    custom_data=['Healthy Cuts'],
     labels={
         'Count': 'Count',
         'Month': 'Month',
@@ -1515,7 +1525,7 @@ healthy_cuts_fig = px.bar(
     textposition='auto', 
     textangle=0, 
     hovertemplate=( 
-        '<b>Name</b>: %{label}<br><b>Count</b>: %{y}<extra></extra>'  
+        '<b>Answer</b>: %{customdata[0]}<br><b>Count</b>: %{y}<extra></extra>' 
     ),
 )
 
@@ -1916,6 +1926,29 @@ html.Div(
             children=[
                 dcc.Graph(
                     figure=healthy_cuts_pie
+                )
+            ]
+        ),
+    ]
+),
+
+# ROW 1
+html.Div(
+    className='row1',
+    children=[
+        html.Div(
+            className='graph1',
+            children=[
+                dcc.Graph(
+                    figure=impression_fig
+                )
+            ]
+        ),
+        html.Div(
+            className='graph2',
+            children=[
+                dcc.Graph(
+                    figure=impression_pie
                 )
             ]
         ),
