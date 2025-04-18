@@ -149,23 +149,18 @@ columns =[
 
 df.rename(
     columns={
-        'Timestamp': 'Timestamp',
         'Email Address': 'Email',
-        'Name:': 'Name',
         "Prior to today's visit, when was the last time you visited a doctor?": 'Last Doctor Visit',
         'Which services were provided to you today?': 'Service',
         'How do you feel about the health issue that brought you to BMHC?': 'Health',
         'What is your overall stress level?': 'Stress',
-        'Explain the reason for your answer:': 'Stress Explanation',
-        'How would you rate your overall level of mental health?': 'Mental Health',
-        'How would you rate your overall physical health?': 'Physical Health',
-        'Please explain the reason for your answer:': 'Health Explanation',
+        'How would you rate your overall level of mental health?': 'Mental',
+        'How would you rate your overall physical health?': 'Physical',
         "What is your overall impression of the Black Men's Health Clinic?": 'Impression',
-        'Did the medical provider meet your expectations?': 'Provider Expectations',
-        'Did the medical care meet your needs?': 'Care Needs',
-        'Did the Outreach & Engagement Team provide a strong support system?': 'Outreach Support',
-        'Please explain the reason for your answer:': 'Outreach Explanation',
-        'Are you a member of the HealthyCuts™ Program?': 'HealthyCuts Membership',
+        'Did the medical provider meet your expectations?': 'Expectation',
+        'Did the medical care meet your needs?': 'Care',
+        'Did the Outreach & Engagement Team provide a strong support system?': 'Outreach',
+        'Are you a member of the HealthyCuts™ Program?': 'Healthy Cuts',
     },
     inplace=True
 )
@@ -351,7 +346,7 @@ client_pie = px.pie(
 # print("Unique Health Before: \n", df['Health'].unique().tolist())
 print("Health Value Counts: \n", df['Health'].value_counts())
 
-_unique =[
+health_unique =[
     
 ]
 
@@ -363,22 +358,9 @@ df['Health'] = (df['Health']
     })          
 )
 
-# print("After: \n", df[''].unique().tolist())
+# print("Health Unique After: \n", df[''].unique().tolist())
 
 df_health = df['Health'].value_counts().reset_index(name='Count')
-
-# health_reviews = []
-# for month in months_in_quarter:
-#     health_reviews_in_month = df[df['Month'] == month].shape[0]  # Count the number of rows for each month
-#     reviews.append(reviews_in_month)
-#     # print(f'Clients Served in {month}:', clients_in_month)
-
-# df_reviews = pd.DataFrame(
-#     {
-#     'Month': months_in_quarter,
-#     'Reviews': reviews
-#     }
-# )
 
 df_health_counts = (
     df.groupby(['Month', 'Health'], sort=False)
@@ -415,7 +397,145 @@ health_fig = px.bar(
     height=600, 
     width = 800,
     title=dict(
-        text= f'{current_quarter} How Clients are feeling about their health',
+        text= f'{current_quarter} How Clients Feel About The Health Issue That Brought Them to BMHC',
+        x=0.5, 
+        font=dict(
+            size=22,
+            family='Calibri',
+            color='black',
+            )
+    ),
+    font=dict(
+        family='Calibri',
+        size=17,
+        color='black'
+    ),
+    xaxis=dict(
+        title=dict(
+            text=None,
+            # text="Month",
+            font=dict(size=20), 
+        ),
+        tickmode='array',
+        tickvals=df_reviews['Month'].unique(),
+        tickangle=0,
+        showticklabels=True,
+    ),
+    legend=dict(
+        title='Rating',
+        # title=None,
+        orientation="v",  # Vertical legend
+        x=1.05,  # Position legend to the right
+        xanchor="left",  # Anchor legend to the left
+        y=1,  # Position legend at the top
+        yanchor="top" 
+    ),
+).update_traces(
+    texttemplate='%{text}',
+    textfont=dict(size=20),  
+    textposition='auto', 
+    textangle=0, 
+    hovertemplate=( 
+        '<b>Name</b>: %{label}<br><b>Count</b>: %{y}<extra></extra>'  
+    ),
+)
+
+health_pie = px.pie(
+    df_health,
+    names='Health',
+    values='Count',
+    color='Health',
+    height=550
+).update_layout(
+    title=dict(
+        x=0.5,
+        text=f'{current_quarter} Ratio of How Clients Feel About The Health Issue That Brought Them to BMHC', 
+        font=dict(
+            size=22,  
+            family='Calibri',  
+            color='black'  
+        ),
+    ),  
+    legend=dict(
+        title='Rating',
+        # title=None,
+        orientation="v",  # Vertical legend
+        x=1.05,  # Position legend to the right
+        xanchor="left",  # Anchor legend to the left
+        y=1,  # Position legend at the top
+        yanchor="top" 
+    ),
+    margin=dict(
+        l=0, 
+        r=0,  
+        t=100,  
+        b=0   
+    )  
+).update_traces(
+    rotation=180,  #
+    textfont=dict(size=19),  
+    textinfo='value+percent',
+    # texttemplate='<br>%{percent:.0%}', 
+    hovertemplate='<b>%{label}</b>: %{value}<extra></extra>'
+)
+
+# --------------------------------- Stress Level -------------------------------- #
+
+# print("Unique Stress Before: \n", df['Stress'].unique().tolist())
+print("Stress Value Counts: \n", df['Stress'].value_counts())
+
+stress_unique =[
+
+]
+
+df['Stress'] = (df['Stress']
+    .astype(str)
+    .str.strip()
+    .replace({
+        "" : ""
+    })          
+)
+
+# print("Stress Unique After: \n", df[''].unique().tolist())
+
+df_stress = df['Stress'].value_counts().reset_index(name='Count')
+
+df_stress_counts = (
+    df.groupby(['Month', 'Stress'], sort=False)
+    .size()
+    .reset_index(name='Count')
+)
+
+df_stress_counts['Month'] = pd.Categorical(
+    df_stress_counts['Month'],
+    categories = months_in_quarter,
+    ordered = True
+)
+
+df_stress_counts = df_stress_counts.sort_values(['Month', 'Stress'])
+
+# print(df_)
+
+stress_fig = px.bar(
+    df_stress_counts, 
+    x='Month', 
+    y='Count',
+    color='Stress', 
+    text='Count',  
+    barmode='group',
+    labels={
+        'Count': 'Count',
+        'Month': 'Month',
+        'Stress': 'Stress'
+    },
+).update_layout(
+    title_x=0.5,
+    xaxis_title='Month',
+    yaxis_title='Count',
+    height=600, 
+    width = 800,
+    title=dict(
+        text= f'{current_quarter} How Clients are feeling about their stress',
         x=0.5, 
         font=dict(
             size=25,
@@ -457,16 +577,16 @@ health_fig = px.bar(
     ),
 )
 
-health_pie = px.pie(
-    df_health,
-    names='Health',
+stress_pie = px.pie(
+    df_stress,
+    names='Stress',
     values='Count',
-    color='Health',
+    color='Stress',
     height=550
 ).update_layout(
     title=dict(
         x=0.5,
-        text=f'{current_quarter} Ratio of How Clients are feeling about their health', 
+        text=f'{current_quarter} Ratio of How Clients are feeling about their stress', 
         font=dict(
             size=25,  
             family='Calibri',  
@@ -496,24 +616,945 @@ health_pie = px.pie(
     hovertemplate='<b>%{label}</b>: %{value}<extra></extra>'
 )
 
-# --------------------------------- Stress Level -------------------------------- #
-
-
-
 # --------------------- Mental Health ------------------------ # 
 
+# print("Unique Mental Before: \n", df['Mental'].unique().tolist())
+# print("Mental Value Counts: \n", df['Mental'].value_counts())
 
+mental_unique =[
+
+]
+
+df['Mental'] = (df['Mental']
+    .astype(str)
+    .str.strip()
+    .replace({
+        "" : ""
+    })          
+)
+
+# print("Mental Unique After: \n", df[''].unique().tolist())
+
+df_mental = df['Mental'].value_counts().reset_index(name='Count')
+
+df_mental_counts = (
+    df.groupby(['Month', 'Mental'], sort=False)
+    .size()
+    .reset_index(name='Count')
+)
+
+df_mental_counts['Month'] = pd.Categorical(
+    df_mental_counts['Month'],
+    categories = months_in_quarter,
+    ordered = True
+)
+
+df_mental_counts = df_mental_counts.sort_values(['Month', 'Mental'])
+
+# print(df_)
+
+mental_fig = px.bar(
+    df_mental_counts, 
+    x='Month', 
+    y='Count',
+    color='Mental', 
+    text='Count',  
+    barmode='group',
+    labels={
+        'Count': 'Count',
+        'Month': 'Month',
+        'Mental': 'Mental'
+    },
+).update_layout(
+    title_x=0.5,
+    xaxis_title='Month',
+    yaxis_title='Count',
+    height=600, 
+    width = 800,
+    title=dict(
+        text= f'{current_quarter} How Clients are feeling about their mental well-being',
+        x=0.5, 
+        font=dict(
+            size=25,
+            family='Calibri',
+            color='black',
+            )
+    ),
+    font=dict(
+        family='Calibri',
+        size=17,
+        color='black'
+    ),
+    xaxis=dict(
+        title=dict(
+            text=None,
+            # text="Month",
+            font=dict(size=20), 
+        ),
+        tickmode='array',
+        tickvals=df_reviews['Month'].unique(),
+        tickangle=0  
+    ),
+    legend=dict(
+        title='Rating',
+        # title=None,
+        orientation="v",  # Vertical legend
+        x=1.05,  # Position legend to the right
+        xanchor="left",  # Anchor legend to the left
+        y=1,  # Position legend at the top
+        yanchor="top" 
+    ),
+).update_traces(
+    texttemplate='%{text}',
+    textfont=dict(size=20),  
+    textposition='auto', 
+    textangle=0, 
+    hovertemplate=( 
+        '<b>Name</b>: %{label}<br><b>Count</b>: %{y}<extra></extra>'  
+    ),
+)
+
+mental_pie = px.pie(
+    df_mental,
+    names='Mental',
+    values='Count',
+    color='Mental',
+    height=550
+).update_layout(
+    title=dict(
+        x=0.5,
+        text=f'{current_quarter} Ratio of How Clients are feeling about their mental well-being', 
+        font=dict(
+            size=25,  
+            family='Calibri',  
+            color='black'  
+        ),
+    ),  
+    legend=dict(
+        title='Rating',
+        # title=None,
+        orientation="v",  # Vertical legend
+        x=1.05,  # Position legend to the right
+        xanchor="left",  # Anchor legend to the left
+        y=1,  # Position legend at the top
+        yanchor="top" 
+    ),
+    margin=dict(
+        l=0, 
+        r=0,  
+        t=100,  
+        b=0   
+    )  
+).update_traces(
+    rotation=180,  #
+    textfont=dict(size=19),  
+    textinfo='value+percent',
+    # texttemplate='<br>%{percent:.0%}', 
+    hovertemplate='<b>%{label}</b>: %{value}<extra></extra>'
+)
 
 # --------------------- Physical Health ------------------------ #
 
+# print("Unique Physical Before: \n", df['Physical'].unique().tolist())
+# print("Physical Value Counts: \n", df['Physical'].value_counts())
 
+physical_unique =[
+
+]
+
+df['Physical'] = (df['Physical']
+    .astype(str)
+    .str.strip()
+    .replace({
+        "" : ""
+    })          
+)
+
+# print("Physical Unique After: \n", df[''].unique().tolist())
+
+df_physical = df['Physical'].value_counts().reset_index(name='Count')
+
+df_physical_counts = (
+    df.groupby(['Month', 'Physical'], sort=False)
+    .size()
+    .reset_index(name='Count')
+)
+
+df_physical_counts['Month'] = pd.Categorical(
+    df_physical_counts['Month'],
+    categories = months_in_quarter,
+    ordered = True
+)
+
+df_physical_counts = df_physical_counts.sort_values(['Month', 'Physical'])
+
+# print(df_)
+
+physical_fig = px.bar(
+    df_physical_counts, 
+    x='Month', 
+    y='Count',
+    color='Physical', 
+    text='Count',  
+    barmode='group',
+    labels={
+        'Count': 'Count',
+        'Month': 'Month',
+        'Physical': 'Physical'
+    },
+).update_layout(
+    title_x=0.5,
+    xaxis_title='Month',
+    yaxis_title='Count',
+    height=600, 
+    width = 800,
+    title=dict(
+        text= f'{current_quarter} How Clients are feeling about their physical well-being',
+        x=0.5, 
+        font=dict(
+            size=25,
+            family='Calibri',
+            color='black',
+            )
+    ),
+    font=dict(
+        family='Calibri',
+        size=17,
+        color='black'
+    ),
+    xaxis=dict(
+        title=dict(
+            text=None,
+            # text="Month",
+            font=dict(size=20), 
+        ),
+        tickmode='array',
+        tickvals=df_reviews['Month'].unique(),
+        tickangle=0  
+    ),
+    legend=dict(
+        title='Rating',
+        # title=None,
+        orientation="v",  # Vertical legend
+        x=1.05,  # Position legend to the right
+        xanchor="left",  # Anchor legend to the left
+        y=1,  # Position legend at the top
+        yanchor="top" 
+    ),
+).update_traces(
+    texttemplate='%{text}',
+    textfont=dict(size=20),  
+    textposition='auto', 
+    textangle=0, 
+    hovertemplate=( 
+        '<b>Name</b>: %{label}<br><b>Count</b>: %{y}<extra></extra>'  
+    ),
+)
+
+physical_pie = px.pie(
+    df_physical,
+    names='Physical',
+    values='Count',
+    color='Physical',
+    height=550
+).update_layout(
+    title=dict(
+        x=0.5,
+        text=f'{current_quarter} Ratio of How Clients are feeling about their physical well-being', 
+        font=dict(
+            size=25,  
+            family='Calibri',  
+            color='black'  
+        ),
+    ),  
+    legend=dict(
+        title='Rating',
+        # title=None,
+        orientation="v",  # Vertical legend
+        x=1.05,  # Position legend to the right
+        xanchor="left",  # Anchor legend to the left
+        y=1,  # Position legend at the top
+        yanchor="top" 
+    ),
+    margin=dict(
+        l=0, 
+        r=0,  
+        t=100,  
+        b=0   
+    )  
+).update_traces(
+    rotation=180,  #
+    textfont=dict(size=19),  
+    textinfo='value+percent',
+    # texttemplate='<br>%{percent:.0%}', 
+    hovertemplate='<b>%{label}</b>: %{value}<extra></extra>'
+)
 
 # ------------------------ Impression of BMHC ? ---------------------------- #
+
+# print("Unique Impression Before: \n", df['Impression'].unique().tolist())
+# print("Impression Value Counts: \n", df['Impression'].value_counts())
+
+impression_unique =[
+
+]
+
+df['Impression'] = (df['Impression']
+    .astype(str)
+    .str.strip()
+    .replace({
+        "" : ""
+    })          
+)
+
+# print("Impression Unique After: \n", df[''].unique().tolist())
+
+df_impression = df['Impression'].value_counts().reset_index(name='Count')
+
+df_impression_counts = (
+    df.groupby(['Month', 'Impression'], sort=False)
+    .size()
+    .reset_index(name='Count')
+)
+
+df_impression_counts['Month'] = pd.Categorical(
+    df_impression_counts['Month'],
+    categories = months_in_quarter,
+    ordered = True
+)
+
+df_impression_counts = df_impression_counts.sort_values(['Month', 'Impression'])
+
+# print(df_)
+
+impression_fig = px.bar(
+    df_impression_counts, 
+    x='Month', 
+    y='Count',
+    color='Impression', 
+    text='Count',  
+    barmode='group',
+    labels={
+        'Count': 'Count',
+        'Month': 'Month',
+        'Impression': 'Impression'
+    },
+).update_layout(
+    title_x=0.5,
+    xaxis_title='Month',
+    yaxis_title='Count',
+    height=600, 
+    width = 800,
+    title=dict(
+        text= f'{current_quarter} Overall Impression of BMHC?',
+        x=0.5, 
+        font=dict(
+            size=25,
+            family='Calibri',
+            color='black',
+            )
+    ),
+    font=dict(
+        family='Calibri',
+        size=17,
+        color='black'
+    ),
+    xaxis=dict(
+        title=dict(
+            text=None,
+            font=dict(size=20), 
+        ),
+        tickmode='array',
+        tickvals=df_reviews['Month'].unique(),
+        tickangle=0  
+    ),
+    legend=dict(
+        title='Rating',
+        orientation="v",  # Vertical legend
+        x=1.05,  # Position legend to the right
+        xanchor="left",  # Anchor legend to the left
+        y=1,  # Position legend at the top
+        yanchor="top" 
+    ),
+).update_traces(
+    texttemplate='%{text}',
+    textfont=dict(size=20),  
+    textposition='auto', 
+    textangle=0, 
+    hovertemplate=( 
+        '<b>Name</b>: %{label}<br><b>Count</b>: %{y}<extra></extra>'  
+    ),
+)
+
+impression_pie = px.pie(
+    df_impression,
+    names='Impression',
+    values='Count',
+    color='Impression',
+    height=550
+).update_layout(
+    title=dict(
+        x=0.5,
+        text=f'{current_quarter} Ratio of Overall Impression of BMHC?', 
+        font=dict(
+            size=25,  
+            family='Calibri',  
+            color='black'  
+        ),
+    ),  
+    legend=dict(
+        title='Rating',
+        orientation="v",
+        x=1.05,
+        xanchor="left",
+        y=1,
+        yanchor="top" 
+    ),
+    margin=dict(
+        l=0, 
+        r=0,  
+        t=100,  
+        b=0   
+    )  
+).update_traces(
+    rotation=180,
+    textfont=dict(size=19),  
+    textinfo='value+percent',
+    hovertemplate='<b>%{label}</b>: %{value}<extra></extra>'
+)
+
 # ------------------------ Provider Expectation ---------------------------- #
+
+# print("Unique Expectation Before: \n", df['Expectation'].unique().tolist())
+# print("Expectation Value Counts: \n", df['Expectation'].value_counts())
+
+expectation_unique =[
+
+]
+
+df['Expectation'] = (df['Expectation']
+    .astype(str)
+    .str.strip()
+    .replace({
+        "" : ""
+    })          
+)
+
+# print("Expectation Unique After: \n", df[''].unique().tolist())
+
+df_expectation = df['Expectation'].value_counts().reset_index(name='Count')
+
+df_expectation_counts = (
+    df.groupby(['Month', 'Expectation'], sort=False)
+    .size()
+    .reset_index(name='Count')
+)
+
+df_expectation_counts['Month'] = pd.Categorical(
+    df_expectation_counts['Month'],
+    categories = months_in_quarter,
+    ordered = True
+)
+
+df_expectation_counts = df_expectation_counts.sort_values(['Month', 'Expectation'])
+
+# print(df_)
+
+expectation_fig = px.bar(
+    df_expectation_counts, 
+    x='Month', 
+    y='Count',
+    color='Expectation', 
+    text='Count',  
+    barmode='group',
+    labels={
+        'Count': 'Count',
+        'Month': 'Month',
+        'Expectation': 'Expectation'
+    },
+).update_layout(
+    title_x=0.5,
+    xaxis_title='Month',
+    yaxis_title='Count',
+    height=600, 
+    width = 800,
+    title=dict(
+        text= f'{current_quarter} Did Medical Provider Meet Your Expectations?',
+        x=0.5, 
+        font=dict(
+            size=25,
+            family='Calibri',
+            color='black',
+            )
+    ),
+    font=dict(
+        family='Calibri',
+        size=17,
+        color='black'
+    ),
+    xaxis=dict(
+        title=dict(
+            text=None,
+            font=dict(size=20), 
+        ),
+        tickmode='array',
+        tickvals=df_reviews['Month'].unique(),
+        tickangle=0  
+    ),
+    legend=dict(
+        title='Rating',
+        orientation="v",  # Vertical legend
+        x=1.05,
+        xanchor="left",
+        y=1,
+        yanchor="top" 
+    ),
+).update_traces(
+    texttemplate='%{text}',
+    textfont=dict(size=20),  
+    textposition='auto', 
+    textangle=0, 
+    hovertemplate=( 
+        '<b>Name</b>: %{label}<br><b>Count</b>: %{y}<extra></extra>'  
+    ),
+)
+
+expectation_pie = px.pie(
+    df_expectation,
+    names='Expectation',
+    values='Count',
+    color='Expectation',
+    height=550
+).update_layout(
+    title=dict(
+        x=0.5,
+        text=f'{current_quarter} Did Medical Provider Meet Your Expectations?', 
+        font=dict(
+            size=25,  
+            family='Calibri',  
+            color='black'  
+        ),
+    ),  
+    legend=dict(
+        title='',
+        orientation="v",
+        x=1.05,
+        xanchor="left",
+        y=1,
+        yanchor="top" 
+    ),
+    margin=dict(
+        l=0, 
+        r=0,  
+        t=100,  
+        b=0   
+    )  
+).update_traces(
+    rotation=180,
+    textfont=dict(size=19),  
+    textinfo='value+percent',
+    hovertemplate='<b>%{label}</b>: %{value}<extra></extra>'
+)
+
 # ------------------------ Care Needs ---------------------------- #
+
+# print("Unique Care Before: \n", df['Care'].unique().tolist())
+print("Care Value Counts: \n", df['Care'].value_counts())
+
+care_unique =[
+
+]
+
+df['Care'] = (df['Care']
+    .astype(str)
+    .str.strip()
+    .replace({
+        "" : "N/A",
+        pd.NA : "N/A",
+    })          
+)
+
+# print("Care Unique After: \n", df[''].unique().tolist())
+
+df_care = df['Care'].value_counts().reset_index(name='Count')
+
+df_care_counts = (
+    df.groupby(['Month', 'Care'], sort=False)
+    .size()
+    .reset_index(name='Count')
+)
+
+df_care_counts['Month'] = pd.Categorical(
+    df_care_counts['Month'],
+    categories = months_in_quarter,
+    ordered = True
+)
+
+df_care_counts = df_care_counts.sort_values(['Month', 'Care'])
+
+# print(df_)
+
+care_fig = px.bar(
+    df_care_counts, 
+    x='Month', 
+    y='Count',
+    color='Care', 
+    text='Count',  
+    barmode='group',
+    labels={
+        'Count': 'Count',
+        'Month': 'Month',
+        'Care': 'Care'
+    },
+).update_layout(
+    title_x=0.5,
+    xaxis_title='Month',
+    yaxis_title='Count',
+    height=600, 
+    width = 800,
+    title=dict(
+        text= f'{current_quarter} Did Medical Care Meet Your Needs?',
+        x=0.5, 
+        font=dict(
+            size=25,
+            family='Calibri',
+            color='black',
+            )
+    ),
+    font=dict(
+        family='Calibri',
+        size=17,
+        color='black'
+    ),
+    xaxis=dict(
+        title=dict(
+            text=None,
+            font=dict(size=20), 
+        ),
+        tickmode='array',
+        tickvals=df_reviews['Month'].unique(),
+        tickangle=0  
+    ),
+    legend=dict(
+        title='',
+        orientation="v",
+        x=1.05,
+        xanchor="left",
+        y=1,
+        yanchor="top" 
+    ),
+).update_traces(
+    texttemplate='%{text}',
+    textfont=dict(size=20),  
+    textposition='auto', 
+    textangle=0, 
+    hovertemplate=( 
+        '<b>Name</b>: %{label}<br><b>Count</b>: %{y}<extra></extra>'  
+    ),
+)
+
+care_pie = px.pie(
+    df_care,
+    names='Care',
+    values='Count',
+    color='Care',
+    height=550
+).update_layout(
+    title=dict(
+        x=0.5,
+        text=f'{current_quarter} Did Medical Care Meet Your Needs?', 
+        font=dict(
+            size=25,  
+            family='Calibri',  
+            color='black'  
+        ),
+    ),  
+    legend=dict(
+        title='Rating',
+        orientation="v",
+        x=1.05,
+        xanchor="left",
+        y=1,
+        yanchor="top" 
+    ),
+    margin=dict(
+        l=0, 
+        r=0,  
+        t=100,  
+        b=0   
+    )  
+).update_traces(
+    rotation=180,
+    textfont=dict(size=19),  
+    textinfo='value+percent',
+    hovertemplate='<b>%{label}</b>: %{value}<extra></extra>'
+)
+
 # ------------------------ Outreach Support ---------------------------- #
+
+# print("Unique Outreach Before: \n", df['Outreach'].unique().tolist())
+# print("Outreach Value Counts: \n", df['Outreach'].value_counts())
+
+outreach_unique =[
+
+]
+
+df['Outreach'] = (df['Outreach']
+    .astype(str)
+    .str.strip()
+    .replace({
+        "" : ""
+    })          
+)
+
+# print("Outreach Unique After: \n", df[''].unique().tolist())
+
+df_outreach = df['Outreach'].value_counts().reset_index(name='Count')
+
+df_outreach_counts = (
+    df.groupby(['Month', 'Outreach'], sort=False)
+    .size()
+    .reset_index(name='Count')
+)
+
+df_outreach_counts['Month'] = pd.Categorical(
+    df_outreach_counts['Month'],
+    categories = months_in_quarter,
+    ordered = True
+)
+
+df_outreach_counts = df_outreach_counts.sort_values(['Month', 'Outreach'])
+
+# print(df_)
+
+outreach_fig = px.bar(
+    df_outreach_counts, 
+    x='Month', 
+    y='Count',
+    color='Outreach', 
+    text='Count',  
+    barmode='group',
+    labels={
+        'Count': 'Count',
+        'Month': 'Month',
+        'Outreach': 'Outreach'
+    },
+).update_layout(
+    title_x=0.5,
+    xaxis_title='Month',
+    yaxis_title='Count',
+    height=600, 
+    width = 800,
+    title=dict(
+        text= f'{current_quarter} Did Outreach Provide Strong Support System?',
+        x=0.5, 
+        font=dict(
+            size=25,
+            family='Calibri',
+            color='black',
+            )
+    ),
+    font=dict(
+        family='Calibri',
+        size=17,
+        color='black'
+    ),
+    xaxis=dict(
+        title=dict(
+            text=None,
+            font=dict(size=20), 
+        ),
+        tickmode='array',
+        tickvals=df_reviews['Month'].unique(),
+        tickangle=0  
+    ),
+    legend=dict(
+        title='',
+        orientation="v",
+        x=1.05,
+        xanchor="left",
+        y=1,
+        yanchor="top" 
+    ),
+).update_traces(
+    texttemplate='%{text}',
+    textfont=dict(size=20),  
+    textposition='auto', 
+    textangle=0, 
+    hovertemplate=( 
+        '<b>Name</b>: %{label}<br><b>Count</b>: %{y}<extra></extra>'  
+    ),
+)
+
+outreach_pie = px.pie(
+    df_outreach,
+    names='Outreach',
+    values='Count',
+    color='Outreach',
+    height=550
+).update_layout(
+    title=dict(
+        x=0.5,
+        text=f'{current_quarter} Did Outreach Provide Strong Support System?', 
+        font=dict(
+            size=25,  
+            family='Calibri',  
+            color='black'  
+        ),
+    ),  
+    legend=dict(
+        title='',
+        orientation="v",
+        x=1.05,
+        xanchor="left",
+        y=1,
+        yanchor="top" 
+    ),
+    margin=dict(
+        l=0, 
+        r=0,  
+        t=100,  
+        b=0   
+    )  
+).update_traces(
+    rotation=180,
+    textfont=dict(size=19),  
+    textinfo='value+percent',
+    hovertemplate='<b>%{label}</b>: %{value}<extra></extra>'
+)
+
 # ------------------------ Healthy Cuts Membership ---------------------------- #
 
+# print("Unique Healthy Cuts Before: \n", df['Healthy Cuts'].unique().tolist())
+# print("Healthy Cuts Value Counts: \n", df['Healthy Cuts'].value_counts())
+
+healthy_cuts_unique =[
+
+]
+
+df['Healthy Cuts'] = (df['Healthy Cuts']
+    .astype(str)
+    .str.strip()
+    .replace({
+        "" : ""
+    })          
+)
+
+# print("Healthy Cuts Unique After: \n", df[''].unique().tolist())
+
+df_healthy_cuts = df['Healthy Cuts'].value_counts().reset_index(name='Count')
+
+df_healthy_cuts_counts = (
+    df.groupby(['Month', 'Healthy Cuts'], sort=False)
+    .size()
+    .reset_index(name='Count')
+)
+
+df_healthy_cuts_counts['Month'] = pd.Categorical(
+    df_healthy_cuts_counts['Month'],
+    categories = months_in_quarter,
+    ordered = True
+)
+
+df_healthy_cuts_counts = df_healthy_cuts_counts.sort_values(['Month', 'Healthy Cuts'])
+
+# print(df_)
+
+healthy_cuts_fig = px.bar(
+    df_healthy_cuts_counts, 
+    x='Month', 
+    y='Count',
+    color='Healthy Cuts', 
+    text='Count',  
+    barmode='group',
+    labels={
+        'Count': 'Count',
+        'Month': 'Month',
+        'Healthy Cuts': 'Healthy Cuts'
+    },
+).update_layout(
+    title_x=0.5,
+    xaxis_title='Month',
+    yaxis_title='Count',
+    height=600, 
+    width = 800,
+    title=dict(
+        text= f'{current_quarter} Are you a Healthy Cuts Member?',
+        x=0.5, 
+        font=dict(
+            size=25,
+            family='Calibri',
+            color='black',
+            )
+    ),
+    font=dict(
+        family='Calibri',
+        size=17,
+        color='black'
+    ),
+    xaxis=dict(
+        title=dict(
+            text=None,
+            font=dict(size=20), 
+        ),
+        tickmode='array',
+        tickvals=df_reviews['Month'].unique(),
+        tickangle=0  
+    ),
+    legend=dict(
+        title='',
+        orientation="v",
+        x=1.05,
+        xanchor="left",
+        y=1,
+        yanchor="top" 
+    ),
+).update_traces(
+    texttemplate='%{text}',
+    textfont=dict(size=20),  
+    textposition='auto', 
+    textangle=0, 
+    hovertemplate=( 
+        '<b>Name</b>: %{label}<br><b>Count</b>: %{y}<extra></extra>'  
+    ),
+)
+
+healthy_cuts_pie = px.pie(
+    df_healthy_cuts,
+    names='Healthy Cuts',
+    values='Count',
+    color='Healthy Cuts',
+    height=550
+).update_layout(
+    title=dict(
+        x=0.5,
+        text=f'{current_quarter} Are you a Healthy Cuts Member?', 
+        font=dict(
+            size=25,  
+            family='Calibri',  
+            color='black'  
+        ),
+    ),  
+    legend=dict(
+        title='',
+        orientation="v",
+        x=1.05,
+        xanchor="left",
+        y=1,
+        yanchor="top" 
+    ),
+    margin=dict(
+        l=0, 
+        r=0,  
+        t=100,  
+        b=0   
+    )  
+).update_traces(
+    rotation=180,
+    textfont=dict(size=19),  
+    textinfo='value+percent',
+    hovertemplate='<b>%{label}</b>: %{value}<extra></extra>'
+)
 
 
 # # ========================== DataFrame Table ========================== #
@@ -728,7 +1769,7 @@ html.Div(
             className='graph1',
             children=[
                 dcc.Graph(
-                    # figure=hours_fig
+                    figure=stress_fig
                 )
             ]
         ),
@@ -736,7 +1777,7 @@ html.Div(
             className='graph2',
             children=[
                 dcc.Graph(
-                    # figure=hours_pie
+                    figure=stress_pie
                 )
             ]
         ),
@@ -751,7 +1792,7 @@ html.Div(
             className='graph1',
             children=[
                 dcc.Graph(
-                    # figure=travel_fig
+                    figure=mental_fig
                 )
             ]
         ),
@@ -759,129 +1800,148 @@ html.Div(
             className='graph2',
             children=[
                 dcc.Graph(
-                    # figure=travel_pie
+                    figure=mental_pie
                 )
             ]
         ),
     ]
 ),
 
-# ROW 
+# ROW 1
 html.Div(
-    className='row3',
+    className='row1',
     children=[
         html.Div(
-            className='graph0',
+            className='graph1',
             children=[
                 dcc.Graph(
-                    # figure=admin_fig
+                    figure=physical_fig
                 )
             ]
-        )
-    ]
-),
-# ROW 
-html.Div(
-    className='row3',
-    children=[
+        ),
         html.Div(
-            className='graph0',
+            className='graph2',
             children=[
                 dcc.Graph(
-                    # figure=admin_pie
+                    figure=physical_pie
                 )
             ]
-        )
+        ),
     ]
 ),
 
-# ROW 
+# ROW 1
 html.Div(
-    className='row3',
+    className='row1',
     children=[
         html.Div(
-            className='graph0',
+            className='graph1',
             children=[
                 dcc.Graph(
-                    # figure=care_fig
+                    figure=expectation_fig
                 )
             ]
-        )
+        ),
+        html.Div(
+            className='graph2',
+            children=[
+                dcc.Graph(
+                    figure=expectation_pie
+                )
+            ]
+        ),
     ]
 ),
 
-# ROW 
+# ROW 1
 html.Div(
-    className='row3',
+    className='row1',
     children=[
         html.Div(
-            className='graph0',
+            className='graph1',
             children=[
                 dcc.Graph(
-                    # figure=care_pie
+                    figure=care_fig
                 )
             ]
-        )
+        ),
+        html.Div(
+            className='graph2',
+            children=[
+                dcc.Graph(
+                    figure=care_pie
+                )
+            ]
+        ),
     ]
 ),
 
-# ROW 
+# ROW 1
 html.Div(
-    className='row3',
+    className='row1',
     children=[
         html.Div(
-            className='graph0',
+            className='graph1',
             children=[
                 dcc.Graph(
-                    # figure=comm_fig
+                    figure=outreach_fig
                 )
             ]
-        )
+        ),
+        html.Div(
+            className='graph2',
+            children=[
+                dcc.Graph(
+                    figure=outreach_pie
+                )
+            ]
+        ),
     ]
 ),
 
-# ROW 
+# ROW 1
 html.Div(
-    className='row3',
+    className='row1',
     children=[
         html.Div(
-            className='graph0',
+            className='graph1',
             children=[
                 dcc.Graph(
-                    # figure=comm_pie
+                    figure=healthy_cuts_fig
                 )
             ]
-        )
+        ),
+        html.Div(
+            className='graph2',
+            children=[
+                dcc.Graph(
+                    figure=healthy_cuts_pie
+                )
+            ]
+        ),
     ]
 ),
 
-# ROW 
+# ROW 1
 html.Div(
-    className='row3',
+    className='row1',
     children=[
         html.Div(
-            className='graph0',
+            className='graph1',
             children=[
                 dcc.Graph(
-                    # figure=person_fig
+                    # figure=_fig
                 )
             ]
-        )
-    ]
-),
-
-# ROW 
-html.Div(
-    className='row3',
-    children=[
+        ),
         html.Div(
-            className='graph0',
+            className='graph2',
             children=[
                 dcc.Graph(
-                    # figure=person_pie
+                    # figure=_pie
                 )
             ]
-        )
+        ),
     ]
 ),
 ])
@@ -992,104 +2052,3 @@ _unique =[
 # )
 
 # print("After: \n", df[''].unique().tolist())
-
-b = []
-for month in months_in_quarter:
-    b_in_month = df[df['Month'] == month].shape[0]  # Count the number of rows for each month
-    b.append(b_in_month)
-    # print(f'Clients Served in {month}:', clients_in_month)
-
-df_ = pd.DataFrame(
-    {
-    'Month': months_in_quarter,
-    'Reviews': b
-    }
-)
-
-# print(df_)
-
-client_fig = px.bar(
-    df_, 
-    x='Month', 
-    y='',
-    labels={'': 'Number of Reviews'},
-    color='Month', 
-    text='Reviews',  
-).update_layout(
-    title_x=0.5,
-    xaxis_title='Month',
-    yaxis_title='Count',
-    height=600, 
-    width = 800,
-    title=dict(
-        text= f'{current_quarter} Reviews by Month',
-        x=0.5, 
-        font=dict(
-            size=35,
-            family='Calibri',
-            color='black',
-            )
-    ),
-    font=dict(
-        family='Calibri',
-        size=17,
-        color='black'
-    ),
-    xaxis=dict(
-        title=dict(
-            text=None,
-            # text="Month",
-            font=dict(size=20), 
-        ),
-        tickmode='array',
-        tickvals=df_reviews['Month'].unique(),
-        tickangle=0  
-    ),
-    legend=dict(
-        # title='Administrative Activity',
-        title=None,
-        orientation="v",  # Vertical legend
-        x=1.05,  # Position legend to the right
-        xanchor="left",  # Anchor legend to the left
-        y=1,  # Position legend at the top
-        yanchor="top" 
-    ),
-).update_traces(
-    texttemplate='%{text}',
-    textfont=dict(size=20),  
-    textposition='auto', 
-    textangle=0, 
-    hovertemplate=( 
-        '<b>Name</b>: %{label}<br><b>Count</b>: %{y}<extra></extra>'  
-    ),
-)
-
-client_pie = px.pie(
-    df_reviews,
-    names='Month',
-    values='Reviews',
-    color='Month',
-    height=550
-).update_layout(
-    title=dict(
-        x=0.5,
-        text=f'{current_quarter} Ratio of Clients Served', 
-        font=dict(
-            size=35,  
-            family='Calibri',  
-            color='black'  
-        ),
-    ),  
-    margin=dict(
-        l=0, 
-        r=0,  
-        t=100,  
-        b=0   
-    )  
-).update_traces(
-    rotation=180,  #
-    textfont=dict(size=19),  
-    textinfo='value+percent',
-    # texttemplate='<br>%{percent:.0%}', 
-    hovertemplate='<b>%{label}</b>: %{value}<extra></extra>'
-)
