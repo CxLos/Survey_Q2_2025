@@ -207,11 +207,11 @@ months_in_quarter = quarter_months[quarter]
 
 # Define a standardized color palette for ratings 1 to 5
 rating_colors = {
-    '1': '#B22222',  # Dark Red
-    '2': '#FF4500',  # Dark Orange
-    '3': '#BDB76B',  # Dark Olive Green
-    '4': '#006400',  # Dark Green
-    '5': '#00008B'   # Dark Blue
+    '1': 'rgb(255, 2, 2)',      # Bright Red
+    '2': 'rgb(231, 123, 0)',    # Orange
+    '3': 'rgb(255, 207, 62)',   # Yellow-Gold
+    '4': 'rgb(9, 132, 0)',      # Green
+    '5': 'rgb(42, 147, 252)'    # Blue
 }
 
 rating_order = ['1', '2', '3', '4', '5']

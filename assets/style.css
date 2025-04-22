@@ -343,10 +343,11 @@
 .rating_row {
   display: flex;
   flex-direction: row;
+  align-self: center; 
   justify-content: center;
   text-align: center;
-  /* width: 96%; */
-  margin: 0px 0px 10px 0px;
+  width: 98%;
+  margin: 0 auto 10px auto;
   padding: 10px 0px 20px 0px;
   border-bottom: 2px solid rgb(186, 186, 186);
 }
