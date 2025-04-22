@@ -339,3 +339,105 @@
 }
 
 /* --------------------------------------------------------- */
+
+.rating_row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  text-align: center;
+  /* width: 96%; */
+  margin: 0px 0px 10px 0px;
+  padding: 10px 0px 20px 0px;
+  border-bottom: 2px solid rgb(186, 186, 186);
+}
+
+.rating_box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  margin: 20px 60px 20px 60px;
+}
+
+.rating_title {
+  font-size: 15px;
+  color: rgb(38, 38, 38);
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  margin: 10px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
+}
+
+.rating_title_text {
+  font-size: 30px;
+  color: rgb(38, 38, 38);
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  margin: 0px 0px -20px 0px;
+  padding: 0px 0px 0px 0px;
+}
+
+.rating_outline1 {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  margin: 0px 0px 0px 0px;
+  border: 3px solid rgb(0, 0, 0);
+  border-radius: 2px;
+  width: 50px;
+  height: 50px;
+  background-color: rgb(255, 2, 2);
+}
+.rating_outline2 {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  margin: 0px 0px 0px 0px;
+  border: 3px solid rgb(0, 0, 0);
+  border-radius: 2px;
+  width: 50px;
+  height: 50px;
+  background-color: rgb(231, 123, 0);
+}
+.rating_outline3 {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  margin: 0px 0px 0px 0px;
+  border: 3px solid rgb(0, 0, 0);
+  border-radius: 2px;
+  width: 50px;
+  height: 50px;
+  background-color: rgb(255, 207, 62);
+}
+.rating_outline4 {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  margin: 0px 0px 0px 0px;
+  border: 3px solid rgb(0, 0, 0);
+  border-radius: 2px;
+  width: 50px;
+  height: 50px;
+  background-color: rgb(9, 132, 0);
+}
+.rating_outline5 {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  margin: 0px 0px 0px 0px;
+  border: 3px solid rgb(0, 0, 0);
+  border-radius: 2px;
+  width: 50px;
+  height: 50px;
+  background-color: rgb(42, 147, 252);
+}

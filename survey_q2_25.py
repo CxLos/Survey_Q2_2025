@@ -205,6 +205,31 @@ quarter_months = {
 # Get the months for the current quarter
 months_in_quarter = quarter_months[quarter]
 
+# Define a standardized color palette for ratings 1 to 5
+rating_colors = {
+    '1': '#B22222',  # Dark Red
+    '2': '#FF4500',  # Dark Orange
+    '3': '#BDB76B',  # Dark Olive Green
+    '4': '#006400',  # Dark Green
+    '5': '#00008B'   # Dark Blue
+}
+
+rating_order = ['1', '2', '3', '4', '5']
+
+columns_to_order = ['Health', 'Mental', 'Stress', 'Physical', 'Impression', 'Expectation', 'Care']
+
+for col in columns_to_order:
+    df[col] = (
+        df[col]
+        .astype(str)
+        .str.strip()
+        .replace({
+            "", pd.NA,
+            "nan", pd.NA
+            })  # Optional: convert empty strings to NaN
+    )
+    df[col] = pd.Categorical(df[col], categories=rating_order, ordered=True)
+
 # Calculate start and end month indices for the quarter
 # all_months = [
 #     'January', 'February', 'March', 
@@ -261,6 +286,7 @@ client_fig = px.bar(
     labels={'Reviews': 'Number of Reviews'},
     color='Month', 
     text='Reviews',  
+        color_discrete_map=rating_colors, 
 ).update_layout(
     title_x=0.5,
     xaxis_title='Month',
@@ -386,6 +412,8 @@ health_fig = px.bar(
     text='Count',  
     barmode='group',
     custom_data=['Health'],
+    category_orders={'Health': rating_order}, 
+        color_discrete_map=rating_colors, 
     labels={
         'Count': 'Count',
         'Month': 'Month',
@@ -446,7 +474,8 @@ health_pie = px.pie(
     names='Health',
     values='Count',
     color='Health',
-    height=550
+# category_orders={'Health': rating_order}, 
+    color_discrete_map=rating_colors, 
 ).update_layout(
     title=dict(
         x=0.5,
@@ -483,7 +512,7 @@ health_pie = px.pie(
 # --------------------------------- Stress Level -------------------------------- #
 
 # print("Unique Stress Before: \n", df['Stress'].unique().tolist())
-print("Stress Value Counts: \n", df['Stress'].value_counts())
+# print("Stress Value Counts: \n", df['Stress'].value_counts())
 
 stress_unique =[
 
@@ -525,6 +554,7 @@ stress_fig = px.bar(
     text='Count',  
     barmode='group',
     custom_data=['Stress'],
+    color_discrete_map=rating_colors, 
     labels={
         'Count': 'Count',
         'Month': 'Month',
@@ -584,7 +614,8 @@ stress_pie = px.pie(
     names='Stress',
     values='Count',
     color='Stress',
-    height=550
+    height=550,
+    color_discrete_map=rating_colors, 
 ).update_layout(
     title=dict(
         x=0.5,
@@ -663,6 +694,7 @@ mental_fig = px.bar(
     text='Count',  
     barmode='group',
     custom_data=['Mental'],
+    color_discrete_map=rating_colors, 
     labels={
         'Count': 'Count',
         'Month': 'Month',
@@ -722,7 +754,8 @@ mental_pie = px.pie(
     names='Mental',
     values='Count',
     color='Mental',
-    height=550
+    height=550,
+    color_discrete_map=rating_colors, 
 ).update_layout(
     title=dict(
         x=0.5,
@@ -801,6 +834,7 @@ physical_fig = px.bar(
     text='Count',  
     barmode='group',
     custom_data=['Physical'],
+    color_discrete_map=rating_colors, 
     labels={
         'Count': 'Count',
         'Month': 'Month',
@@ -860,7 +894,8 @@ physical_pie = px.pie(
     names='Physical',
     values='Count',
     color='Physical',
-    height=550
+    height=550,
+    color_discrete_map=rating_colors, 
 ).update_layout(
     title=dict(
         x=0.5,
@@ -939,6 +974,7 @@ impression_fig = px.bar(
     text='Count',  
     barmode='group',
     custom_data=['Impression'],
+    color_discrete_map=rating_colors, 
     labels={
         'Count': 'Count',
         'Month': 'Month',
@@ -996,7 +1032,8 @@ impression_pie = px.pie(
     names='Impression',
     values='Count',
     color='Impression',
-    height=550
+    height=550,
+    color_discrete_map=rating_colors, 
 ).update_layout(
     title=dict(
         x=0.5,
@@ -1165,7 +1202,7 @@ expectation_pie = px.pie(
 # ------------------------ Care Needs ---------------------------- #
 
 # print("Unique Care Before: \n", df['Care'].unique().tolist())
-print("Care Value Counts: \n", df['Care'].value_counts())
+# print("Care Value Counts: \n", df['Care'].value_counts())
 
 care_unique =[
 
@@ -1176,6 +1213,7 @@ df['Care'] = (df['Care']
     .str.strip()
     .replace({
         "" : "N/A",
+        "nan" : "N/A",
         pd.NA : "N/A",
     })          
 )
@@ -1445,7 +1483,8 @@ df['Healthy Cuts'] = (df['Healthy Cuts']
     .astype(str)
     .str.strip()
     .replace({
-        "" : ""
+        "" : "",
+        "" : "no response",
     })          
 )
 
@@ -1654,6 +1693,8 @@ app.layout = html.Div(
 #     ]
 # ),
 
+
+
 # ROW 1
 html.Div(
     className='row0',
@@ -1744,6 +1785,152 @@ html.Div(
                     # figure=status_fig
                 )
             ]
+        ),
+    ]
+),
+
+html.Div(
+    className='rating_row',
+    children=[
+        html.Div(
+            className='rating_box',
+            children=[
+                html.Div(
+                    className='rating_outline1',
+                    children=[
+                        html.Div(
+                            className='rating1',
+                            children=[
+                                html.H1(
+                                    className='ratingg',
+                                    children=['1']
+                                )
+                            ]  
+                        ),
+                    ],
+                ),
+                html.Div(
+                    className='rating_title',
+                    children=[
+                        html.H1(
+                            className='rating_title_text',
+                            children=['Poor']
+                        )
+                    ],
+                ),
+            ],    
+        ),
+        html.Div(
+            className='rating_box',
+            children=[
+                html.Div(
+                    className='rating_outline2',
+                    children=[
+                        html.Div(
+                            className='rating2',
+                            children=[
+                                html.H1(
+                                    className='ratingg',
+                                    children=['2']
+                                )
+                            ]  
+                        ),
+                    ],
+                ),
+                html.Div(
+                    className='rating_title',
+                    children=[
+                        html.H1(
+                            className='rating_title_text',
+                            children=['Bad']
+                        )
+                    ],
+                ),
+            ],    
+        ),
+        html.Div(
+            className='rating_box',
+            children=[
+                html.Div(
+                    className='rating_outline3',
+                    children=[
+                        html.Div(
+                            className='rating3',
+                            children=[
+                                html.H1(
+                                    className='ratingg',
+                                    children=['3']
+                                )
+                            ]  
+                        ),
+                    ],
+                ),
+                html.Div(
+                    className='rating_title',
+                    children=[
+                        html.H1(
+                            className='rating_title_text',
+                            children=['OK']
+                        )
+                    ],
+                ),
+            ],    
+        ),
+        html.Div(
+            className='rating_box',
+            children=[
+                html.Div(
+                    className='rating_outline4',
+                    children=[
+                        html.Div(
+                            className='rating4',
+                            children=[
+                                html.H1(
+                                    className='ratingg',
+                                    children=['4']
+                                )
+                            ]  
+                        ),
+                    ],
+                ),
+                html.Div(
+                    className='rating_title',
+                    children=[
+                        html.H1(
+                            className='rating_title_text',
+                            children=['Good']
+                        )
+                    ],
+                ),
+            ],    
+        ),
+        html.Div(
+            className='rating_box',
+            children=[
+                html.Div(
+                    className='rating_outline5',
+                    children=[
+                        html.Div(
+                            className='rating5',
+                            children=[
+                                html.H1(
+                                    className='ratingg',
+                                    children=['5']
+                                )
+                            ]  
+                        ),
+                    ],
+                ),
+                html.Div(
+                    className='rating_title',
+                    children=[
+                        html.H1(
+                            className='rating_title_text',
+                            children=['Excellent']
+                        )
+                    ],
+                ),
+            ],    
         ),
     ]
 ),
