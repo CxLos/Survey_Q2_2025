@@ -314,9 +314,12 @@ client_fig = px.bar(
             font=dict(size=20), 
         ),
         tickmode='array',
-        tickvals=df_reviews['Month'].unique(),
-        tickangle=0  
+        # tickvals=df_reviews['Month'].unique(),
+        tickvals=sorted(df_reviews['Month'].unique()),
+        tickangle=0,
+        showticklabels=True,  
     ),
+
     legend=dict(
         # title='Administrative Activity',
         title=None,
@@ -400,6 +403,18 @@ df_health_counts['Month'] = pd.Categorical(
     ordered = True
 )
 
+# Create new column for grouped labels on x-axis
+df_health_counts['Month_Health'] = df_health_counts['Month'].astype(str) + " - " + df_health_counts['Health'].astype(str)
+
+# Optional: This gives you predictable ordering like Jan-1, Jan-2... Mar-5
+df_health_counts['Month_Health'] = pd.Categorical(
+    df_health_counts['Month_Health'],
+    categories=[
+        f"{m} - {h}" for m in months_in_quarter for h in ['1', '2', '3', '4', '5']
+    ],
+    ordered=True
+)
+
 df_health_counts = df_health_counts.sort_values(['Month', 'Health'])
 
 # print(df_)
@@ -412,8 +427,8 @@ health_fig = px.bar(
     text='Count',  
     barmode='group',
     custom_data=['Health'],
-    category_orders={'Health': rating_order}, 
-        color_discrete_map=rating_colors, 
+    category_orders={'Health': ['1', '2', '3', '4', '5']}, 
+    color_discrete_map=rating_colors, 
     labels={
         'Count': 'Count',
         'Month': 'Month',
@@ -424,15 +439,15 @@ health_fig = px.bar(
     xaxis_title='Month',
     yaxis_title='Count',
     height=600, 
-    width = 800,
+    width=800,
     title=dict(
-        text= f'{current_quarter} How Clients Feel About The Health Issue That Brought Them to BMHC',
+        text=f'{current_quarter} How Clients Feel About The Health Issue That Brought Them to BMHC',
         x=0.5, 
         font=dict(
             size=22,
             family='Calibri',
             color='black',
-            )
+        )
     ),
     font=dict(
         family='Calibri',
@@ -442,31 +457,27 @@ health_fig = px.bar(
     xaxis=dict(
         title=dict(
             text=None,
-            # text="Month",
             font=dict(size=20), 
         ),
         tickmode='array',
-        tickvals=df_reviews['Month'].unique(),
+        tickvals=sorted(df_health_counts['Month'].unique()),
         tickangle=0,
         showticklabels=True,
     ),
     legend=dict(
         title='Rating',
-        # title=None,
-        orientation="v",  # Vertical legend
-        x=1.05,  # Position legend to the right
-        xanchor="left",  # Anchor legend to the left
-        y=1,  # Position legend at the top
-        yanchor="top" 
+        orientation="v",
+        x=1.05,
+        xanchor="left",
+        y=1,
+        yanchor="top"
     ),
 ).update_traces(
     texttemplate='%{text}',
     textfont=dict(size=20),  
     textposition='auto', 
     textangle=0, 
-    hovertemplate=( 
-        '<b>Rating</b>: %{customdata[0]}<br><b>Count</b>: %{y}<extra></extra>'
-    ),
+    hovertemplate='<b>Rating</b>: %{customdata[0]}<br><b>Count</b>: %{y}<extra></extra>'
 )
 
 health_pie = px.pie(
@@ -1751,43 +1762,43 @@ html.Div(
 ),
 
 # ROW 1
-html.Div(
-    className='row1',
-    children=[
-        html.Div(
-            className='graph11',
-            children=[
-            html.Div(
-                className='high1',
-                children=[f'{current_quarter} Placeholder']
-            ),
-            html.Div(
-                className='circle1',
-                children=[
-                    html.Div(
-                        className='hilite',
-                        children=[
-                            html.H1(
-                            className='high3',
-                            # children=[]
-                    ),
-                        ]
-                    )
+# html.Div(
+#     className='row1',
+#     children=[
+#         html.Div(
+#             className='graph11',
+#             children=[
+#             html.Div(
+#                 className='high1',
+#                 children=[f'{current_quarter} Placeholder']
+#             ),
+#             html.Div(
+#                 className='circle1',
+#                 children=[
+#                     html.Div(
+#                         className='hilite',
+#                         children=[
+#                             html.H1(
+#                             className='high3',
+#                             # children=[]
+#                     ),
+#                         ]
+#                     )
  
-                ],
-            ),
-            ]
-        ),
-        html.Div(
-            className='graph2',
-            children=[
-                dcc.Graph(
-                    # figure=status_fig
-                )
-            ]
-        ),
-    ]
-),
+#                 ],
+#             ),
+#             ]
+#         ),
+#         html.Div(
+#             className='graph2',
+#             children=[
+#                 dcc.Graph(
+#                     # figure=status_fig
+#                 )
+#             ]
+#         ),
+#     ]
+# ),
 
 html.Div(
     className='rating_row',
@@ -1931,6 +1942,29 @@ html.Div(
                     ],
                 ),
             ],    
+        ),
+    ]
+),
+
+# ROW 1
+html.Div(
+    className='row1',
+    children=[
+        html.Div(
+            className='graph1',
+            children=[
+                dcc.Graph(
+                    figure=client_fig
+                )
+            ]
+        ),
+        html.Div(
+            className='graph2',
+            children=[
+                dcc.Graph(
+                    figure=client_pie
+                )
+            ]
         ),
     ]
 ),
